@@ -41,6 +41,11 @@ variableGroups:
       - worker_count
       - enable_aidp
 
+  - title: Registry login (optional)
+    variables:
+      - ocir_user
+      - ocir_token
+
   - title: Advanced
     visible: false
     variables:
@@ -50,8 +55,6 @@ variableGroups:
       - enable_quotas
       - quota_limits
       - worker_image
-      - ocir_user
-      - ocir_token
       - control_adb_allowed_cidrs
       - admin_cidr
       - vcn_cidr
@@ -164,7 +167,7 @@ variables:
   ocir_token:
     type: password
     title: Registry auth token
-    description: Empty = one is created for the installing user (a user may hold two).
+    description: Leave empty and one is created for you. OCI allows each user two auth tokens; if you already have two, paste one of them here (Profile > Auth tokens) or delete one first.
 
   control_adb_allowed_cidrs:
     type: array

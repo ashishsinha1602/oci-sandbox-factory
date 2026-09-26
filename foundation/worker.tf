@@ -58,11 +58,26 @@ data "oci_identity_user" "installer" {
   user_id  = var.current_user_ocid
 }
 
+# OCI allows a user two auth tokens. Check before creating one, so a user who
+# already has two gets a plain message at plan time instead of a failed apply.
+data "oci_identity_auth_tokens" "installer" {
+  count    = local.make_token ? 1 : 0
+  provider = oci.home
+  user_id  = var.current_user_ocid
+}
+
 resource "oci_identity_auth_token" "ocir" {
   count       = local.make_token ? 1 : 0
   provider    = oci.home
   user_id     = var.current_user_ocid
   description = "${var.prefix} sandbox factory: workers push the images users build"
+
+  lifecycle {
+    precondition {
+      condition     = length([for t in data.oci_identity_auth_tokens.installer[0].tokens : t if t.state == "ACTIVE"]) < 2
+      error_message = "You already have 2 auth tokens, the most OCI allows. Either delete one (Profile > Auth tokens) and run Apply again, or paste an existing token in 'Registry auth token' on the form."
+    }
+  }
 }
 
 resource "oci_identity_dynamic_group" "worker" {
