@@ -8,10 +8,20 @@ resource "oci_kms_vault" "secrets" {
   vault_type     = "DEFAULT"
 }
 
+# A new vault's management endpoint is not in DNS for a minute or two after the
+# vault reports ACTIVE; creating the key at once failed a fresh install with
+# "lookup <vault>-management.kms...: no such host". Wait, then create the key.
+resource "time_sleep" "vault_dns" {
+  create_duration = "180s"
+  triggers = {
+    management_endpoint = oci_kms_vault.secrets.management_endpoint
+  }
+}
+
 resource "oci_kms_key" "secrets" {
   compartment_id      = oci_identity_compartment.control.id
   display_name        = "${var.prefix}-secrets-key"
-  management_endpoint = oci_kms_vault.secrets.management_endpoint
+  management_endpoint = time_sleep.vault_dns.triggers["management_endpoint"]
   protection_mode     = "SOFTWARE"
   key_shape {
     algorithm = "AES"

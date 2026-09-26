@@ -72,6 +72,7 @@ variables:
     description: 12 to 30 characters with an upper-case letter, a lower-case letter and a digit. Leave empty to have one generated and shown in the outputs.
     required: false
     confirmation: true
+    pattern: "^$|^(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9])[^\"' ]{12,30}$"
   parent_compartment_ocid:
     type: oci:identity:compartment:id
     title: Parent compartment
