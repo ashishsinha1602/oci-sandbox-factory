@@ -1,0 +1,29 @@
+Sandbox Factory
+Copyright (c) 2026 Ashish Sinha. All rights reserved.
+
+This software, including its source code, compiled code, container images,
+application exports, prompts and documentation (the "Software"), is the
+proprietary work of the copyright holder.
+
+Permitted use. You may install the published release of the Software (the
+Resource Manager stack and the container images it references) in an Oracle
+Cloud Infrastructure tenancy that you control, and use it there for your own
+internal purposes, free of charge.
+
+Not permitted without prior written permission from the copyright holder:
+  - copying, modifying, translating, decompiling or reverse engineering the
+    Software, except to the extent the law expressly allows it;
+  - distributing, sublicensing, selling, hosting or offering the Software, or
+    anything derived from it, to others, including as a service;
+  - removing or altering this notice or any copyright or authorship notice;
+  - presenting the Software, or any part of it, as your own work.
+
+The Terraform configuration published with a release may be read and edited
+only to install and operate the Software in your own tenancy.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM,
+DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE SOFTWARE, INCLUDING ANY
+CHARGES INCURRED IN YOUR CLOUD TENANCY.
+
+Licensing enquiries: sinha.ashish.4.u@gmail.com
