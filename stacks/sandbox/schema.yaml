@@ -1,0 +1,254 @@
+# Resource Manager form definition. This is the self-service UI: OCI renders
+# it when someone creates a stack from this folder (zip or git source).
+title: Sandbox Factory
+description: Create an isolated, auto-expiring sandbox with an Autonomous Database, Kafka and a containerised app.
+schemaVersion: 1.1.0
+version: "1.0"
+locale: en
+
+variableGroups:
+  - title: Hidden
+    visible: false
+    variables:
+      - tenancy_ocid
+      - region
+      - compartment_ocid
+      - tag_namespace
+
+  - title: Foundation
+    variables:
+      - sandboxes_compartment_ocid
+      - vcn_id
+      - public_subnet_id
+      - private_subnet_id
+
+  - title: Sandbox
+    variables:
+      - sandbox_id
+      - owner
+      - team
+      - ttl_days
+      - per_sandbox_compartment
+      - allowed_cidr
+
+  - title: Autonomous Database
+    variables:
+      - enable_adb
+      - adb_tier
+      - adb_workload
+      - adb_ecpu_count
+      - adb_storage_gb
+
+  - title: Kafka
+    variables:
+      - enable_kafka
+      - kafka_mode
+      - kafka_topics
+      - kafka_partitions
+      - kafka_version
+
+  - title: App
+    variables:
+      - enable_app
+      - app_public
+      - app_shape
+      - app_ocpus
+      - app_memory_gb
+      - app_containers
+
+variables:
+  sandboxes_compartment_ocid:
+    type: oci:identity:compartment:id
+    title: Sandboxes compartment
+    description: The sbx-sandboxes compartment from the foundation stack.
+    required: true
+
+  vcn_id:
+    type: oci:core:vcn:id
+    title: Shared VCN
+    required: true
+    dependsOn:
+      compartmentId: ${sandboxes_compartment_ocid}
+
+  public_subnet_id:
+    type: oci:core:subnet:id
+    title: Public subnet
+    required: true
+    dependsOn:
+      vcnId: ${vcn_id}
+
+  private_subnet_id:
+    type: oci:core:subnet:id
+    title: Private subnet
+    required: true
+    dependsOn:
+      vcnId: ${vcn_id}
+
+  sandbox_id:
+    type: string
+    title: Sandbox id
+    description: 2-20 chars, lowercase letters, digits, dashes.
+    pattern: "^[a-z][a-z0-9-]{1,19}$"
+    required: true
+
+  owner:
+    type: string
+    title: Owner (email)
+    required: true
+
+  team:
+    type: string
+    title: Team
+    default: personal
+
+  ttl_days:
+    type: integer
+    title: Lifetime (days)
+    description: The sandbox is destroyed automatically after this many days (max 30).
+    minimum: 1
+    maximum: 30
+    default: 3
+
+  per_sandbox_compartment:
+    type: boolean
+    title: Own compartment per sandbox
+    default: false
+
+  allowed_cidr:
+    type: string
+    title: Allowed source CIDR
+    description: Who may reach public endpoints. Use your IP/32 when possible.
+    default: 0.0.0.0/0
+
+  enable_adb:
+    type: boolean
+    title: Autonomous Database
+    default: false
+
+  adb_tier:
+    type: enum
+    title: Tier
+    enum: [free, paid]
+    default: free
+    visible: ${enable_adb}
+
+  adb_workload:
+    type: enum
+    title: Workload
+    enum: [OLTP, DW, AJD, APEX]
+    default: OLTP
+    visible: ${enable_adb}
+
+  adb_ecpu_count:
+    type: integer
+    title: ECPUs (paid tier)
+    default: 2
+    visible:
+      and:
+        - ${enable_adb}
+        - eq:
+            - ${adb_tier}
+            - paid
+
+  adb_storage_gb:
+    type: integer
+    title: Storage GB (paid tier)
+    default: 20
+    visible:
+      and:
+        - ${enable_adb}
+        - eq:
+            - ${adb_tier}
+            - paid
+
+  enable_kafka:
+    type: boolean
+    title: Kafka
+    default: false
+
+  kafka_mode:
+    type: enum
+    title: Mode
+    enum: [streaming, cluster]
+    default: streaming
+    description: streaming = serverless Kafka-compatible endpoint. cluster = managed brokers (billed hourly).
+    visible: ${enable_kafka}
+
+  kafka_topics:
+    type: array
+    items:
+      type: string
+    title: Topics
+    default: [events]
+    visible: ${enable_kafka}
+
+  kafka_partitions:
+    type: integer
+    title: Partitions per topic
+    default: 1
+    visible: ${enable_kafka}
+
+  kafka_version:
+    type: string
+    title: Kafka version (cluster mode)
+    default: "4.0.0"
+    visible:
+      and:
+        - ${enable_kafka}
+        - eq:
+            - ${kafka_mode}
+            - cluster
+
+  enable_app:
+    type: boolean
+    title: Containerised app
+    default: false
+
+  app_public:
+    type: boolean
+    title: Public IP
+    default: true
+    visible: ${enable_app}
+
+  app_shape:
+    type: enum
+    title: Shape
+    enum: [CI.Standard.A1.Flex, CI.Standard.E4.Flex, CI.Standard.E3.Flex]
+    default: CI.Standard.A1.Flex
+    description: A1 is ARM. Build images for linux/arm64 or pick E4.
+    visible: ${enable_app}
+
+  app_ocpus:
+    type: integer
+    title: OCPUs
+    default: 1
+    visible: ${enable_app}
+
+  app_memory_gb:
+    type: integer
+    title: Memory GB
+    default: 4
+    visible: ${enable_app}
+
+  app_containers:
+    type: string
+    title: Containers (JSON)
+    description: List of {name, image, port, env, command, args}. Ports are opened to the allowed CIDR.
+    visible: ${enable_app}
+
+outputs:
+  sandbox:
+    title: Sandbox
+    type: json
+  adb:
+    title: Autonomous Database
+    type: json
+  kafka:
+    title: Kafka
+    type: json
+  app:
+    title: App
+    type: json
+  adb_admin_password:
+    title: ADB admin password
+    sensitive: true

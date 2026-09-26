@@ -1,0 +1,19 @@
+# Copy to personal.tfvars (git-ignored) and fill in.
+
+tenancy_ocid            = "ocid1.tenancy.oc1..xxxx"
+region                  = "us-phoenix-1"
+parent_compartment_ocid = "ocid1.tenancy.oc1..xxxx" # tenancy root on a personal account
+
+prefix      = "sbx"
+environment = "personal"
+owner       = "you@example.com"
+team        = "personal"
+
+budget_amount      = 50
+budget_alert_email = "you@example.com"
+
+# Narrow SSH to your own IP once you know it (https://ifconfig.me)
+admin_cidr = "0.0.0.0/0"
+
+# Flip on after confirming quota names on the tenancy
+enable_quotas = false
