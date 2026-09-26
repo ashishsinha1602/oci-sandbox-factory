@@ -74,7 +74,9 @@ resource "oci_identity_auth_token" "ocir" {
 
   lifecycle {
     precondition {
-      condition     = length([for t in data.oci_identity_auth_tokens.installer[0].tokens : t if t.state == "ACTIVE"]) < 2
+      # room for a new token, or this install's token already exists (a re-apply)
+      condition = (length([for t in data.oci_identity_auth_tokens.installer[0].tokens : t if t.state == "ACTIVE"]) < 2
+      || contains([for t in data.oci_identity_auth_tokens.installer[0].tokens : t.description], "${var.prefix} sandbox factory: workers push the images users build"))
       error_message = "You already have 2 auth tokens, the most OCI allows. Either delete one (Profile > Auth tokens) and run Apply again, or paste an existing token in 'Registry auth token' on the form."
     }
   }

@@ -170,6 +170,8 @@ locals {
       NOSQL_TABLES           = join(",", module.nosql[0].tables)
       NOSQL_REGION           = var.region
     } : {},
+    # the user's own variables come last, so they win over the factory's
+    nonsensitive(var.user_env),
   )
 
   app_containers = [

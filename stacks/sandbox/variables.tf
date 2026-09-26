@@ -217,6 +217,13 @@ variable "dataflow_jobs" {
   default = []
 }
 
+variable "user_env" {
+  description = "Environment variables the user gave for their code (API keys, settings). Injected into every container, function and Spark job of the sandbox; never written to outputs."
+  type        = map(string)
+  default     = {}
+  sensitive   = true
+}
+
 variable "functions" {
   description = <<-EOT
     OCI Functions for this sandbox. Serverless, billed per invocation, so they
