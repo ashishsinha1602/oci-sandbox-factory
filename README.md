@@ -28,8 +28,10 @@ cost of every part before anything is created.
 
 ## Install
 
-1. Read [docs/PREREQUISITES.md](docs/PREREQUISITES.md). You need a tenancy
-   administrator and a Pay-As-You-Go or paid account.
+1. Read [docs/PREREQUISITES.md](docs/PREREQUISITES.md). The install is run once by a
+   tenancy administrator (or a group with the listed grants) on a Pay-As-You-Go or
+   paid account; users need no OCI account afterwards. Your security team's questions
+   are answered in [docs/SECURITY.md](docs/SECURITY.md).
 2. Click **Deploy to Oracle Cloud**. Choose a parent compartment, a prefix, a
    budget, and the application's admin username and password.
 3. Apply. It takes about 15 minutes. Open the `app_url` output and sign in.
