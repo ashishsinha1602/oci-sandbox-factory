@@ -88,9 +88,10 @@ resource "oci_dataflow_application" "this" {
   arguments            = each.value.arguments
   logs_bucket_uri      = var.logs_bucket_uri
   warehouse_bucket_uri = each.value.warehouse_uri
-  configuration        = merge(var.injected_env, each.value.spark_conf, each.value.iceberg ? local.iceberg_conf : {})
-  defined_tags         = var.defined_tags
-  freeform_tags        = var.freeform_tags
+  # Spark exposes only spark.* properties: the sandbox settings become spark.sandbox.<KEY>
+  configuration = merge({ for k, v in var.injected_env : "spark.sandbox.${k}" => v }, each.value.spark_conf, each.value.iceberg ? local.iceberg_conf : {})
+  defined_tags  = var.defined_tags
+  freeform_tags = var.freeform_tags
 
   depends_on = [oci_objectstorage_object.script]
 
@@ -141,7 +142,7 @@ resource "oci_dataflow_application" "iceberg_query" {
   executor_shape  = "VM.Standard.E4.Flex"
   arguments       = ["$${sql}"]
   logs_bucket_uri = var.logs_bucket_uri
-  configuration   = merge(var.injected_env, local.iceberg_conf)
+  configuration   = merge({ for k, v in var.injected_env : "spark.sandbox.${k}" => v }, local.iceberg_conf)
   defined_tags    = var.defined_tags
   freeform_tags   = var.freeform_tags
 

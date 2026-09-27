@@ -22,7 +22,10 @@ if not sql or sql.upper() == "TABLES":
 else:
     df = spark.sql(sql)
 df.show(200, truncate=False)
-out = "oci://{}@{}/query-results/{:%Y%m%dT%H%M%S}".format(
-    spark.conf.get("DATA_BUCKET"), spark.conf.get("OBJECT_NAMESPACE"), datetime.datetime.utcnow())
-df.coalesce(1).write.option("header", True).csv(out)
-print("results written to", out)
+# the sandbox settings reach Spark as spark.sandbox.<KEY>; without them the rows above are the result
+bucket = spark.conf.get("spark.sandbox.DATA_BUCKET", None)
+ns = spark.conf.get("spark.sandbox.OBJECT_NAMESPACE", None)
+if bucket and ns:
+    out = "oci://{}@{}/query-results/{:%Y%m%dT%H%M%S}".format(bucket, ns, datetime.datetime.utcnow())
+    df.coalesce(1).write.option("header", True).csv(out)
+    print("results written to", out)
