@@ -239,6 +239,9 @@ module "catalog" {
   name           = local.name
   enabled        = var.enable_catalog
   data_assets    = var.catalog_assets
+  region         = var.region
+  namespace      = length(local.bucket_names) > 0 ? module.storage[0].namespace : ""
+  buckets        = values(local.bucket_names)
   defined_tags   = local.defined_tags
   freeform_tags  = local.freeform_tags
 

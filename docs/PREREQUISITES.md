@@ -202,5 +202,9 @@ Learned from a full reset of our own install (2026-09-25):
   authentication-scheme change, not yet done.
 - One region per install (a second region is a second install with another prefix).
 - Kafka's public endpoint add-on is unreliable through the Terraform provider
-  (being moved to the SDK); the Data Catalog harvest registers the bucket but the
-  harvest itself can fail inside the service.
+  (being moved to the SDK).
+- Data Catalog: every sandbox bucket is registered in the catalog with a
+  resource-principal connection and a filename pattern, and a harvest runs after
+  each build. The harvest succeeds and the buckets appear as folders; file-level
+  entities depend on the harvest scope Oracle's console sets, which the API does
+  not expose yet, so the catalog shows the buckets, not the files inside them.

@@ -38,7 +38,7 @@ output "queues" {
 output "consoles" {
   value = {
     data_flow      = "https://cloud.oracle.com/data-flow/apps?region=${var.region}&compartmentId=${local.compartment_id}"
-    data_catalog   = "https://cloud.oracle.com/data-catalog/data-catalogs?region=${var.region}&compartmentId=${local.compartment_id}"
+    data_catalog   = "https://console.${var.region}.oraclecloud.com/datacatalogexplorer"
     object_storage = "https://cloud.oracle.com/object-storage/buckets?region=${var.region}&compartmentId=${local.compartment_id}"
     functions      = "https://cloud.oracle.com/functions/applications?region=${var.region}&compartmentId=${local.compartment_id}"
     queues         = "https://cloud.oracle.com/queue/queues?region=${var.region}&compartmentId=${local.compartment_id}"
