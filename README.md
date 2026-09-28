@@ -9,6 +9,10 @@ list, and builds it in your tenancy with Terraform on Resource Manager. They get
 links, credentials and logs on a card, and the sandbox is destroyed when its
 lifetime ends, after 1 to 30 days.
 
+**Two-minute demo:** https://www.youtube.com/watch?v=nuHfzOqG4io
+
+Also on the [Terraform Registry](https://registry.terraform.io/modules/ashishsinha1602/sandbox-factory/oci/latest) as `ashishsinha1602/sandbox-factory/oci`.
+
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/ashishsinha1602/oci-sandbox-factory/releases/latest/download/sandbox-factory-foundation.zip)
 
 ## What it builds
