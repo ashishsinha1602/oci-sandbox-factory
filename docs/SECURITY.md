@@ -64,12 +64,10 @@ No human user is granted anything by the install.
 
 ## Trust points to raise before approving
 
-1. **The worker image is opaque.** Workers run a bytecode-only image published by
-   the vendor, and the install references a floating `worker:release` tag. That
-   image holds `manage all-resources` in the sandboxes compartment. Require a
-   **pinned version tag** in the stack variable `worker_image` (for example
-   `worker:v1.0.7`) and re-review before moving it. A source licence for building
-   the image inside your own tenancy is available on request.
+1. **The worker image is built from public source.** Workers run the image published by the
+   release workflow from a tagged commit of https://github.com/ashishsinha1602/oci-sandbox-factory-src
+   (Apache-2.0). Read it, build it yourself with `factory/Dockerfile`, and point `worker_image` at your own
+   registry if your policy requires it.
 2. **Users execute code in your cloud.** A sandbox app, function or Data Flow job
    is the user's own code, running with the sandbox dynamic group's grants above.
    Treat the user population like you would treat people with a CI runner in a

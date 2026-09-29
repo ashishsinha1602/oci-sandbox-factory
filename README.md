@@ -54,7 +54,6 @@ Paste a folder link into the chat, for example
 
 ## Licence
 
-Copyright (c) 2026 Ashish Sinha. All rights reserved. You may install and use the
-published release in your own tenancy, free of charge. You may not copy,
-redistribute, resell or present it as your own. See [LICENSE](LICENSE). The
-factory's source code is not public.
+Apache License 2.0. Copyright 2026 Ashish Sinha. Install it, run it, change it, ship it; see [LICENSE](LICENSE).
+The full source of the worker and the application is public at
+https://github.com/ashishsinha1602/oci-sandbox-factory-src, and every release image is built from a tagged commit of it.
