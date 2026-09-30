@@ -48,8 +48,9 @@ cost of every part before anything is created.
 ## Install
 
 1. Read [docs/PREREQUISITES.md](docs/PREREQUISITES.md). The install is run once by a
-   tenancy administrator (or a group with the listed grants) on a Pay-As-You-Go or
-   paid account; users need no OCI account afterwards. Your security team's questions
+   tenancy administrator (or a group with the listed grants). The Free Tier edition
+   installs on a Free Tier account with no payment method; the standard edition needs
+   a Pay-As-You-Go or paid account. Users need no OCI account afterwards. Your security team's questions
    are answered in [docs/SECURITY.md](docs/SECURITY.md).
 2. Click **Deploy to Oracle Cloud**. Choose a parent compartment, a prefix, a
    budget, and the application's admin username and password.
