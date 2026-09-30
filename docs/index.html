@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Self-Service Oracle Cloud Sandboxes That Delete Themselves | OCI Sandbox Factory</title>
+<meta name="description" content="Self-service OCI sandbox environments from a chat. Plans and prices your Oracle Cloud resources, builds them with Terraform in your own tenancy, and automatically deletes them when the lifetime ends. Open source.">
+<link rel="canonical" href="https://ashishsinha1602.github.io/oci-sandbox-factory/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="Self-Service Oracle Cloud Sandboxes That Delete Themselves">
+<meta property="og:description" content="Describe what you need in a chat. It prices it, builds it in your own OCI tenancy with Terraform, and destroys it when its time is up.">
+<meta property="og:url" content="https://ashishsinha1602.github.io/oci-sandbox-factory/">
+<meta property="og:video" content="https://youtu.be/nuHfzOqG4io">
+<meta property="og:image" content="https://ashishsinha1602.github.io/oci-sandbox-factory/medium-cover.png">
+<meta name="twitter:card" content="player">
+<meta name="twitter:image" content="https://ashishsinha1602.github.io/oci-sandbox-factory/medium-cover.png">
+<meta name="twitter:title" content="Self-Service Oracle Cloud Sandboxes That Delete Themselves">
+<meta name="twitter:description" content="Chat for an Autonomous Database, Kafka, NoSQL or a container. Built with Terraform in your tenancy. Auto-deleted when the lifetime ends.">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "OCI Sandbox Factory",
+  "alternateName": "Oracle Cloud Sandbox Factory",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Oracle Cloud Infrastructure",
+  "description": "Self-service Oracle Cloud (OCI) sandbox environments created from a chat. Plans and prices resources from Oracle's public price list, provisions them with Terraform through Resource Manager inside your own tenancy, and destroys them automatically when the sandbox lifetime expires.",
+  "url": "https://ashishsinha1602.github.io/oci-sandbox-factory/",
+  "codeRepository": "https://github.com/ashishsinha1602/oci-sandbox-factory",
+  "license": "https://github.com/ashishsinha1602/oci-sandbox-factory/blob/main/LICENSE",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "author": { "@type": "Person", "name": "Ashish Sinha" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "VideoObject",
+  "name": "OCI Sandbox Factory demo: a self-service Oracle Cloud sandbox in two minutes",
+  "description": "End-to-end demo: describe the environment in a chat, review the priced plan, watch Terraform build it in your own OCI tenancy, then see it destroyed when the lifetime ends.",
+  "thumbnailUrl": "https://i.ytimg.com/vi/nuHfzOqG4io/maxresdefault.jpg",
+  "embedUrl": "https://www.youtube-nocookie.com/embed/nuHfzOqG4io",
+  "contentUrl": "https://youtu.be/nuHfzOqG4io",
+  "uploadDate": "2026-09-01",
+  "publisher": { "@type": "Person", "name": "Ashish Sinha" }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I give developers self-service sandboxes on Oracle Cloud?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Install OCI Sandbox Factory into your tenancy. Developers describe what they need in a chat, the assistant plans and prices the resources, and Terraform provisions them through OCI Resource Manager. Each sandbox has a lifetime and a budget, and is destroyed automatically when the time expires." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I automatically delete unused Oracle Cloud environments?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Every sandbox is created with a lifetime of 1 to 30 days and a budget. A reaper process destroys the stack when the lifetime ends, so nothing is left running and billing after it is no longer needed." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does any data leave my Oracle Cloud tenancy?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. The application, the workers and the model calls to OCI Generative AI all run inside your own tenancy. Passwords are collected in a field on the page and are never sent to the model." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can it migrate an AWS stack to OCI?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. It maps S3 to Object Storage, AWS Glue jobs to Spark on OCI Data Flow, the Glue catalog to OCI Data Catalog, and Airflow stays Airflow, so existing DAGs run unchanged." }
+    }
+  ]
+}
+</script>
+
+<style>
+  :root{
+    --bg:#ffffff; --fg:#14181f; --muted:#5a6372; --line:#e3e7ee;
+    --accent:#b8442b; --card:#f7f8fa; --code:#f2f4f7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0e1117; --fg:#e6e9ef; --muted:#9aa4b4; --line:#242b36;
+      --accent:#ff8462; --card:#161b23; --code:#12161d;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0e1117; --fg:#e6e9ef; --muted:#9aa4b4; --line:#242b36;
+    --accent:#ff8462; --card:#161b23; --code:#12161d;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; background:var(--bg); color:var(--fg);
+    font:17px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px; margin:0 auto; padding:0 16px}
+  header{padding:64px 0 40px; border-bottom:1px solid var(--line)}
+  h1{font-size:2.1rem; line-height:1.2; margin:0 0 14px; letter-spacing:-.02em}
+  .tag{color:var(--accent); font-weight:600; font-size:.8rem; letter-spacing:.09em; text-transform:uppercase; margin:0 0 12px}
+  .lede{font-size:1.15rem; color:var(--muted); margin:0 0 26px}
+  .cta{display:flex; gap:10px; flex-wrap:wrap}
+  .btn{
+    display:inline-block; padding:11px 18px; border-radius:8px; text-decoration:none;
+    font-weight:600; font-size:.95rem; border:1px solid var(--line); color:var(--fg);
+  }
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+  h2{font-size:1.35rem; margin:44px 0 12px; letter-spacing:-.01em}
+  h3{font-size:1.02rem; margin:26px 0 6px}
+  p{margin:0 0 14px}
+  ul{margin:0 0 16px; padding-left:20px}
+  li{margin:6px 0}
+  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:.94rem; display:block; overflow-x:auto}
+  th,td{text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top}
+  th{font-weight:600; color:var(--muted); font-size:.82rem; text-transform:uppercase; letter-spacing:.05em}
+  code{background:var(--code); padding:2px 6px; border-radius:4px; font-size:.88em}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin:18px 0}
+  .muted{color:var(--muted)}
+  footer{margin:56px 0 40px; padding-top:22px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem}
+  a{color:var(--accent)}
+  .ratio{position:relative; padding-top:56.25%; margin:18px 0; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
+  .ratio iframe{position:absolute; inset:0; width:100%; height:100%; border:0; background:#000}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="tag">Open source · Oracle Cloud Infrastructure</p>
+  <h1>Self-service Oracle Cloud sandboxes that delete themselves</h1>
+  <p class="lede">Cloud sandboxes take a ticket and a week to get, and nobody ever deletes them. This builds them from a chat inside your own OCI tenancy — and destroys them when their time is up.</p>
+  <div class="cta">
+    <a class="btn primary" href="https://github.com/ashishsinha1602/oci-sandbox-factory">Get it on GitHub</a>
+    <a class="btn" href="https://youtu.be/nuHfzOqG4io">Watch the 2-minute demo</a>
+  </div>
+</header>
+
+<div class="ratio">
+  <iframe src="https://www.youtube-nocookie.com/embed/nuHfzOqG4io"
+          title="OCI Sandbox Factory demo: chat to a running Oracle Cloud sandbox in two minutes"
+          loading="lazy" allowfullscreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          referrerpolicy="strict-origin-when-cross-origin"></iframe>
+</div>
+<p class="muted" style="margin-top:-6px">Watch it on YouTube: <a href="https://youtu.be/nuHfzOqG4io">youtu.be/nuHfzOqG4io</a> — chat, priced plan, running sandbox, destroyed.</p>
+
+<h2>What it does</h2>
+<p>You describe the environment you need in plain English. The assistant plans the OCI resources, prices them from Oracle's published price list, provisions them with Terraform through OCI Resource Manager, and hands back the URLs and credentials. Each sandbox carries a lifetime of 1 to 30 days and a budget, and a reaper destroys it when the time expires.</p>
+
+<table>
+  <thead><tr><th>Ask for</th><th>You get</th></tr></thead>
+  <tbody>
+    <tr><td>A database to explore or wire into agents</td><td>Autonomous Database with Select AI and REST enabled, a chat UI, an MCP endpoint</td></tr>
+    <tr><td>Your app from a Git folder with a Dockerfile</td><td>The image built inside OCI, served over HTTPS</td></tr>
+    <tr><td>An AWS Lambda or any small handler</td><td>An OCI Function — Lambda code runs unchanged, optionally scheduled</td></tr>
+    <tr><td>A Glue or Spark job</td><td>An OCI Data Flow application, optionally writing Iceberg tables</td></tr>
+    <tr><td>An Airflow plus Spark pipeline</td><td>Airflow with your DAGs, Data Flow, Data Catalog, gold tables in Oracle</td></tr>
+    <tr><td>Queues, NoSQL, Kafka, buckets</td><td>OCI Queue, NoSQL tables, a Kafka cluster, Object Storage</td></tr>
+  </tbody>
+</table>
+
+<h2>Sandboxes that clean themselves up</h2>
+<p>The reason nobody deletes a cloud sandbox is that deleting it is somebody's job and nobody's priority. Here it isn't a job. Every environment is created with an expiry and a budget. When the clock runs out the stack is destroyed, and every card has a Destroy button for sooner.</p>
+
+<h2>Nothing leaves your tenancy</h2>
+<p>The install is a single OCI Resource Manager stack. The application, the container-instance workers, and the calls to OCI Generative AI all run inside your own account. Users sign in to the app with their own login and need no OCI account of their own.</p>
+<div class="card">
+  <p style="margin:0"><strong>Credentials never reach the model.</strong> When a stack needs a password, the assistant asks for it in a field on the page. The value goes to the resource, not to the AI. Image builds run inside OCI with kaniko, so no laptop ever holds cloud credentials.</p>
+</div>
+
+<h2>Moving an AWS stack to Oracle Cloud</h2>
+<p>Describe your AWS setup and it maps each piece, then builds it:</p>
+<ul>
+  <li><strong>S3</strong> → OCI Object Storage</li>
+  <li><strong>AWS Glue jobs</strong> → Spark on OCI Data Flow</li>
+  <li><strong>Glue Data Catalog</strong> → OCI Data Catalog</li>
+  <li><strong>Airflow</strong> → stays Airflow, so your DAGs run unchanged</li>
+  <li><strong>Lambda</strong> → OCI Functions, code unchanged</li>
+</ul>
+
+<h2>Honest pricing</h2>
+<p>Every proposal comes with a cost table built from Oracle's live price list, broken down per component, with free allowances and per-use services called out. A paid Autonomous Database runs roughly $500 a month while it exists, so the assistant defaults to pay-per-use pieces and prices the database as an option you can drop.</p>
+
+<h2>How it is built</h2>
+<ul>
+  <li><strong>Terraform on OCI Resource Manager</strong> for the install and for every sandbox. No local tooling required.</li>
+  <li><strong>Oracle APEX on an Autonomous Database</strong> is the application and the control plane. The assistant runs inside the database and calls OCI Generative AI.</li>
+  <li><strong>Container instances as workers.</strong> They turn requests into stacks and build images inside OCI with kaniko.</li>
+  <li><strong>Select AI</strong> enabled on every database, so any table can be queried in plain English.</li>
+  <li><strong>An end-to-end suite</strong> runs inside OCI, builds every sandbox type for real, verifies it live, then destroys it.</li>
+</ul>
+
+<h2>Installing it</h2>
+<p>One Resource Manager stack, about 15 minutes. It needs a tenancy administrator and a Pay-As-You-Go or paid Oracle Cloud account. Read the prerequisites first — they list exactly what the install creates and what it grants.</p>
+<div class="cta">
+  <a class="btn primary" href="https://github.com/ashishsinha1602/oci-sandbox-factory">Terraform and prerequisites on GitHub</a>
+</div>
+
+<h2>Questions people ask</h2>
+
+<h3>How do I give developers self-service environments on Oracle Cloud?</h3>
+<p>Install this into your tenancy. Developers ask for what they need in a chat instead of raising a ticket, and get a running environment with links and credentials in minutes rather than a week.</p>
+
+<h3>How do I stop unused Oracle Cloud sandboxes running up a bill?</h3>
+<p>Give every environment an expiry when it is created. Here that is built in — 1 to 30 days plus a budget, enforced by a reaper that destroys the stack automatically.</p>
+
+<h3>Is it really open source?</h3>
+<p>Yes. The Terraform for the install and for every sandbox type is public on GitHub, so you can read exactly what gets created in your tenancy and what permissions it is granted before you run anything.</p>
+
+<footer>
+  <p>Built by Ashish Sinha · <a href="https://github.com/ashishsinha1602/oci-sandbox-factory">github.com/ashishsinha1602/oci-sandbox-factory</a></p>
+  <p class="muted">Oracle, OCI, Oracle Cloud Infrastructure and Oracle APEX are trademarks of Oracle Corporation. This is an independent open-source project and is not affiliated with or endorsed by Oracle.</p>
+</footer>
+
+</div>
+</body>
+</html>
