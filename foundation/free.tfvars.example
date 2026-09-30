@@ -1,0 +1,10 @@
+# Free Tier edition: everything the factory needs on an Oracle Cloud Free Tier account.
+edition                 = "free"
+tenancy_ocid            = "ocid1.tenancy.oc1..xxxx"
+region                  = "us-ashburn-1"                 # your home region (Always Free lives there)
+parent_compartment_ocid = "ocid1.tenancy.oc1..xxxx"
+owner                   = "you@example.com"
+budget_alert_email      = "you@example.com"
+budget_amount           = 1
+worker_count            = 1
+gemini_api_key          = ""                             # optional: https://aistudio.google.com/apikey

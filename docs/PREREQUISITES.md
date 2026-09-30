@@ -185,6 +185,10 @@ Learned from a full reset of our own install (2026-09-25):
    - the **vault** is only *scheduled* for deletion (7 days minimum), so its compartment stays until then;
    - **tags are deleted slowly** (about 10 minutes each) and the **tag namespace** after them. Its name is
      unique across the tenancy, so reinstalling with the **same prefix** must wait until it is gone;
+   - the **compartments are deleted last and slowly**. If the destroy job ends with a compartment
+     "still ACTIVE", run **Destroy** once more a few minutes later (seen on clean installs, 2026-09-29);
+   - since v1.1 a sandbox's **built images are deleted with the sandbox**. Images from older versions, and
+     anything you pushed by hand into `<prefix>-control`, keep that compartment alive until you delete them;
    - rarely, a database's **private endpoint outlives the database** and pins its network security group,
      subnet and VCN. The endpoint belongs to the service and cannot be deleted by the tenancy; it is
      released by OCI later.

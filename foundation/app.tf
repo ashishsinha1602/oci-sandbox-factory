@@ -19,8 +19,18 @@ locals {
 }
 
 output "app_url" {
-  description = "Open this, sign in with app_admin_user / app_admin_password. The first start of the workers takes a few minutes to install the application."
+  description = "The application. It appears at this URL a few minutes after this apply finishes (up to 10 on the Free Tier edition): the worker installs it on its first start. Until then the URL shows 404; that is normal. Sign in with app_admin_user / app_admin_password."
   value       = local.app_url
+}
+
+output "next_step" {
+  description = "What to do once this apply is green."
+  value       = "Open status_url: it shows the install progress and opens the application by itself when it is ready (a few minutes; up to 10 on the Free Tier edition). If it shows 404 for the first minutes, the worker has not started yet; wait and reload. Then sign in with app_admin_user / app_admin_password."
+}
+
+output "status_url" {
+  description = "Open this first. Install progress from the worker's first minute on; it refreshes itself and opens the application when ready (JSON for scripts). 404 only until the worker's first start."
+  value       = var.enable_control_adb ? try(replace(oci_database_autonomous_database.control[0].connection_urls[0].apex_url, "/ords/apex", "/ords/admin/status/"), "") : ""
 }
 
 output "app_admin_user" {

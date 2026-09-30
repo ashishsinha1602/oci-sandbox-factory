@@ -7,11 +7,10 @@
 # outputs are the application URL and the first login.
 title: Sandbox Factory
 description: >-
-  Self-service, AI-planned OCI sandboxes that delete themselves. Users describe what
-  they need in a chat; the factory builds it in its own compartment with Terraform,
-  gives them the links and passwords, and removes it when its lifetime ends.
-  Requires a tenancy administrator for the install (it creates IAM policies) and a
-  Pay-As-You-Go or paid account.
+  Self-service, AI-planned OCI sandboxes that delete themselves. Users describe what they
+  need in a chat; the factory builds it with Terraform, hands over links and passwords, and
+  removes it when its lifetime ends. Needs a tenancy administrator to install. Standard
+  edition: Pay-As-You-Go account. Free Tier edition: Always Free resources only.
 schemaVersion: 1.1.0
 version: "1.0"
 locale: en
@@ -28,6 +27,9 @@ variableGroups:
 
   - title: Install
     variables:
+      - edition
+      - worker_shape
+      - gemini_api_key
       - parent_compartment_ocid
       - prefix
       - owner
@@ -55,6 +57,7 @@ variableGroups:
       - enable_quotas
       - quota_limits
       - worker_image
+      - enable_vault
       - control_adb_allowed_cidrs
       - admin_cidr
       - vcn_cidr
@@ -62,6 +65,48 @@ variableGroups:
       - private_subnet_cidr
 
 variables:
+  edition:
+    type: enum
+    title: Edition
+    description: >-
+      Standard needs a Pay-As-You-Go or paid account and puts every OCI service on the menu.
+      Free Tier runs on an Oracle Cloud Free Tier account with Always Free resources only:
+      an Always Free Autonomous Database, NoSQL tables and Object Storage buckets can be built;
+      Kafka, containers, Functions, Data Flow, Data Catalog, Queue and OCI Generative AI are
+      declined with a plain message.
+    enum: [standard, free]
+    default: standard
+    required: true
+  gemini_api_key:
+    type: password
+    title: Gemini API key (Free Tier edition)
+    description: >-
+      OCI Generative AI is not part of Always Free, so the Free Tier edition's assistant uses a
+      Google AI Studio key (free at aistudio.google.com/apikey). Leave empty to run without the
+      assistant: the one-click starters and the form still work.
+    required: false
+    visible:
+      eq:
+        - edition
+        - free
+  worker_shape:
+    type: enum
+    title: Free Tier worker VM
+    description: >-
+      The Always Free VM the worker runs on. Arm (1 OCPU, 6 GB) is ready in about two minutes.
+      Pick the x86 Micro only if the install fails with "Out of host capacity" for Arm; it works
+      but needs about fifteen minutes to start.
+    enum: [VM.Standard.A1.Flex, VM.Standard.E2.1.Micro]
+    default: VM.Standard.A1.Flex
+    visible:
+      eq:
+        - edition
+        - free
+  enable_vault:
+    type: boolean
+    title: Create the secrets vault
+    description: Holds each Kafka sandbox's superuser password. Turn off only if the tenancy cannot create a vault (limit reached).
+    default: true
   app_admin_user:
     type: string
     title: Admin username
@@ -117,11 +162,15 @@ variables:
   worker_count:
     type: integer
     title: Workers
-    description: How many sandboxes can be built at the same time. Each worker is a 1 OCPU container instance.
+    description: How many sandboxes can be built at the same time. Each worker is a 1 OCPU container instance (standard edition; the Free Tier edition always runs one worker VM).
     default: 3
     minimum: 1
     maximum: 10
     required: true
+    visible:
+      eq:
+        - edition
+        - standard
 
   enable_aidp:
     type: boolean

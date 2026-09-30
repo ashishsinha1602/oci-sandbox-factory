@@ -11,11 +11,24 @@ lifetime ends, after 1 to 30 days.
 
 **Two-minute demo:** https://www.youtube.com/watch?v=nuHfzOqG4io
 
-**Overview and FAQ:** https://ashishsinha1602.github.io/oci-sandbox-factory/
-
 Also on the [Terraform Registry](https://registry.terraform.io/modules/ashishsinha1602/sandbox-factory/oci/latest) as `ashishsinha1602/sandbox-factory/oci`.
 
 [![Deploy to Oracle Cloud](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/ashishsinha1602/oci-sandbox-factory/releases/latest/download/sandbox-factory-foundation.zip)
+
+**Oracle Cloud Free Tier account (no card)?** Use this button instead; it installs the Free Tier edition on Always Free resources: databases, NoSQL, buckets, and applications on the free Arm VM. See [FREE-TIER](docs/FREE-TIER.md) for what it can and cannot build.
+
+[![Deploy to Oracle Cloud, Free Tier](https://oci-resourcemanager-plugin.plugins.oci.oraclecloud.com/latest/deploy-to-oracle-cloud.svg)](https://cloud.oracle.com/resourcemanager/stacks/create?zipUrl=https://github.com/ashishsinha1602/oci-sandbox-factory/releases/latest/download/sandbox-factory-foundation-free.zip)
+
+## After the apply is green
+
+Terraform builds the infrastructure; the application is installed by the worker on its
+**first start, a few minutes later** (up to 10 on the Free Tier edition, where the worker
+VM first installs podman and pulls the image). Until then the application URL shows 404.
+That is normal. The stack outputs give you:
+
+- `app_url`: the application, sign in with `app_admin_user` / `app_admin_password`
+- `status_url`: install progress as JSON, from the worker's first minute on
+- `next_step`: the same advice, in the outputs panel
 
 ## What it builds
 
@@ -53,6 +66,14 @@ access.
 
 Paste a folder link into the chat, for example
 `https://github.com/ashishsinha1602/oci-sandbox-factory/tree/main/examples/telemetry-pipeline`.
+
+## Uninstall
+
+1. Destroy your sandboxes first, from the application (each card's **Destroy**) or let them expire.
+   Their images, buckets and databases go with them.
+2. In Resource Manager, open the Sandbox Factory stack and run **Destroy**. Compartments are deleted last
+   and can take a few minutes; if the job reports a compartment still active, run **Destroy** again.
+3. The standard edition's vault is scheduled for deletion (at least 7 days), as Oracle requires.
 
 ## Licence
 

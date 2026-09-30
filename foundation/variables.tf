@@ -148,3 +148,41 @@ variable "app_admin_password" {
     error_message = "12 to 30 characters with an upper-case letter, a lower-case letter and a digit, and no quotes or spaces."
   }
 }
+
+# ---- Edition ------------------------------------------------------------------
+# standard: workers are Container Instances, every OCI service is on the menu.
+# free:     for an Oracle Cloud Free Tier account (no payment method). The worker
+#           runs on one Always Free VM, sandboxes are limited to Always Free
+#           services, and anything else is declined with a plain message.
+variable "edition" {
+  type        = string
+  default     = "standard"
+  description = "standard (Pay As You Go or paid account) or free (Oracle Cloud Free Tier: Always Free resources only)."
+  validation {
+    condition     = contains(["standard", "free"], var.edition)
+    error_message = "edition must be standard or free."
+  }
+}
+
+variable "worker_shape" {
+  type        = string
+  default     = "VM.Standard.A1.Flex"
+  description = "Free Tier edition only: the Always Free VM the worker runs on. VM.Standard.A1.Flex (Arm, 1 OCPU / 6 GB) starts in about two minutes; VM.Standard.E2.1.Micro (x86, 1 GB) is the fallback when the region has no Arm capacity and takes about fifteen."
+  validation {
+    condition     = contains(["VM.Standard.A1.Flex", "VM.Standard.E2.1.Micro"], var.worker_shape)
+    error_message = "worker_shape must be VM.Standard.A1.Flex or VM.Standard.E2.1.Micro (the Always Free shapes)."
+  }
+}
+
+variable "gemini_api_key" {
+  type        = string
+  default     = ""
+  sensitive   = true
+  description = "Free Tier edition only: a Google AI Studio API key (free) for the assistant, because OCI Generative AI is not part of Always Free. Empty = the assistant is off; the one-click starters and the form still work."
+}
+
+variable "enable_vault" {
+  type        = bool
+  default     = true
+  description = "Standard edition: create the vault that holds each Kafka sandbox's superuser password. Turn off in a tenancy that cannot create a vault (the vault limit counts vaults pending deletion for 30 days); Kafka sandboxes then get no public superuser credentials, everything else is unaffected."
+}

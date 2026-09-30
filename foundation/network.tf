@@ -114,6 +114,19 @@ resource "oci_core_security_list" "public" {
     }
   }
 
+  # Free Tier edition: the sandboxes' applications on the worker VM, one port each
+  dynamic "ingress_security_rules" {
+    for_each = local.free_apps ? [1] : []
+    content {
+      source   = "0.0.0.0/0"
+      protocol = "6"
+      tcp_options {
+        min = 8101
+        max = 8199
+      }
+    }
+  }
+
   # ICMP path-MTU discovery
   ingress_security_rules {
     source   = "0.0.0.0/0"
