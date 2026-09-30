@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <title>Self-Service Oracle Cloud Sandboxes That Delete Themselves | OCI Sandbox Factory</title>
-<meta name="description" content="Self-service OCI sandbox environments from a chat. Plans and prices your Oracle Cloud resources, builds them with Terraform in your own tenancy, and automatically deletes them when the lifetime ends. Open source.">
+<meta name="description" content="Self-service OCI sandbox environments from a chat. Installs on a free Oracle Cloud account with no payment method, or on a paid tenancy. Builds with Terraform in your own tenancy and deletes itself when the lifetime ends. Open source.">
 <link rel="canonical" href="https://ashishsinha1602.github.io/oci-sandbox-factory/">
 
 <meta property="og:type" content="website">
@@ -70,6 +70,11 @@
     },
     {
       "@type": "Question",
+      "name": "Can I run it on a free Oracle Cloud account?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Choose Edition: free on the install form and it installs on an Oracle Cloud Free Tier account with no payment method, using Always Free resources: an Autonomous Database 23ai, NoSQL tables, Object Storage buckets, and containerised applications on an Always Free Arm VM. Kafka, Functions, Data Flow, Data Catalog and Queue are not part of Always Free and are declined up front." }
+    },
+    {
+      "@type": "Question",
       "name": "Can it migrate an AWS stack to OCI?",
       "acceptedAnswer": { "@type": "Answer", "text": "Yes. It maps S3 to Object Storage, AWS Glue jobs to Spark on OCI Data Flow, the Glue catalog to OCI Data Catalog, and Airflow stays Airflow, so existing DAGs run unchanged." }
     }
@@ -123,6 +128,9 @@
   footer{margin:56px 0 40px; padding-top:22px; border-top:1px solid var(--line); color:var(--muted); font-size:.9rem}
   a{color:var(--accent)}
   .ratio{position:relative; padding-top:56.25%; margin:18px 0; border-radius:10px; overflow:hidden; border:1px solid var(--line)}
+  .freeline{margin:18px 0 0; font-size:.98rem; color:var(--muted);
+            border-left:3px solid var(--accent); padding:2px 0 2px 14px}
+  .freeline strong{color:var(--fg)}
   .ratio iframe{position:absolute; inset:0; width:100%; height:100%; border:0; background:#000}
 </style>
 </head>
@@ -137,6 +145,7 @@
     <a class="btn primary" href="https://github.com/ashishsinha1602/oci-sandbox-factory">Get it on GitHub</a>
     <a class="btn" href="https://youtu.be/nuHfzOqG4io">Watch the 2-minute demo</a>
   </div>
+  <p class="freeline"><strong>No card needed.</strong> It installs on an Oracle Cloud <em>Free Tier</em> account on Always Free resources &mdash; or on a paid tenancy for the full set.</p>
 </header>
 
 <div class="ratio">
@@ -194,8 +203,25 @@
   <li><strong>An end-to-end suite</strong> runs inside OCI, builds every sandbox type for real, verifies it live, then destroys it.</li>
 </ul>
 
+<h2>Runs on a free Oracle Cloud account</h2>
+<p>The usual reason a tool like this never gets tried is that it wants a paid tenancy before you can see it work. It doesn't. Pick <strong>Edition: free</strong> on the install form and it runs on an Oracle Cloud Free Tier account with <strong>no payment method attached</strong>, using Always Free resources only.</p>
+<table>
+  <thead><tr><th></th><th>Free Tier edition</th><th>Standard edition</th></tr></thead>
+  <tbody>
+    <tr><td>Account</td><td>Free Tier, no card</td><td>Pay As You Go or paid</td></tr>
+    <tr><td>Workers</td><td>One Always Free Arm VM running the worker under podman</td><td>Container Instances, 1 to 10</td></tr>
+    <tr><td>Assistant</td><td>Google Gemini, with your own free key</td><td>OCI Generative AI</td></tr>
+    <tr><td>Sandboxes build</td><td>Autonomous Database 23ai, NoSQL, Object Storage, and containerised apps on the Arm VM</td><td>Everything</td></tr>
+  </tbody>
+</table>
+<p>What Always Free does not include is declined up front rather than failing minutes into a build: Kafka, Functions, Data Flow, Data Catalog, Queue, API Gateway, and paid database tiers. Always Free allows two databases per tenancy and the control database is one of them, so it's one database sandbox at a time. Install in your home region.</p>
+<div class="cta">
+  <a class="btn primary" href="https://github.com/ashishsinha1602/oci-sandbox-factory">Deploy the Free Tier edition</a>
+  <a class="btn" href="https://github.com/ashishsinha1602/oci-sandbox-factory/blob/main/docs/FREE-TIER.md">What it can and cannot build</a>
+</div>
+
 <h2>Installing it</h2>
-<p>One Resource Manager stack, about 15 minutes. It needs a tenancy administrator and a Pay-As-You-Go or paid Oracle Cloud account. Read the prerequisites first — they list exactly what the install creates and what it grants.</p>
+<p>One Resource Manager stack, about 15 minutes, run once by a tenancy administrator. A Free Tier account is enough for the Free Tier edition; the standard edition needs Pay As You Go or a paid account. Read the prerequisites first — they list exactly what the install creates and what it grants.</p>
 <div class="cta">
   <a class="btn primary" href="https://github.com/ashishsinha1602/oci-sandbox-factory">Terraform and prerequisites on GitHub</a>
 </div>
