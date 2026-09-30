@@ -60,6 +60,7 @@ module "adb" {
   vcn_id         = var.vcn_id
   subnet_id      = var.private_subnet_id
   allowed_cidrs  = [var.allowed_cidr]
+  public         = var.adb_public
   defined_tags   = local.defined_tags
   freeform_tags  = local.freeform_tags
 
@@ -126,6 +127,7 @@ module "adb_extra" {
   vcn_id         = var.vcn_id
   subnet_id      = var.private_subnet_id
   allowed_cidrs  = [var.allowed_cidr]
+  public         = var.adb_public
   defined_tags   = local.defined_tags
   freeform_tags  = local.freeform_tags
 

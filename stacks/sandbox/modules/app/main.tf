@@ -205,9 +205,72 @@ resource "oci_apigateway_deployment" "app" {
       content {
         path    = "/ords/{p*}"
         methods = ["ANY"]
+        # ORDS answers APEX with redirects to the host it was asked for. Behind the gateway that
+        # was the database's private hostname, which no browser reaches (verified 2026-09-30);
+        # told the gateway's hostname, every redirect comes back through the gateway.
+        request_policies {
+          header_transformations {
+            set_headers {
+              items {
+                name      = "X-Forwarded-Host"
+                values    = [oci_apigateway_gateway.app[0].hostname]
+                if_exists = "OVERWRITE"
+              }
+              items {
+                name      = "X-Forwarded-Proto"
+                values    = ["https"]
+                if_exists = "OVERWRITE"
+              }
+              items {
+                name      = "Forwarded"
+                values    = ["host=${oci_apigateway_gateway.app[0].hostname};proto=https"]
+                if_exists = "OVERWRITE"
+              }
+            }
+          }
+        }
         backend {
           type                       = "HTTP_BACKEND"
           url                        = "https://${routes.value}/ords/$${request.path[p]}"
+          connect_timeout_in_seconds = 10
+          read_timeout_in_seconds    = 300
+          send_timeout_in_seconds    = 300
+        }
+      }
+    }
+    # APEX signs in through the database's own /adb/auth pages
+    dynamic "routes" {
+      for_each = var.adb_private_fqdn == "" ? [] : [var.adb_private_fqdn]
+      content {
+        path    = "/adb/{p*}"
+        methods = ["ANY"]
+        # ORDS answers APEX with redirects to the host it was asked for. Behind the gateway that
+        # was the database's private hostname, which no browser reaches (verified 2026-09-30);
+        # told the gateway's hostname, every redirect comes back through the gateway.
+        request_policies {
+          header_transformations {
+            set_headers {
+              items {
+                name      = "X-Forwarded-Host"
+                values    = [oci_apigateway_gateway.app[0].hostname]
+                if_exists = "OVERWRITE"
+              }
+              items {
+                name      = "X-Forwarded-Proto"
+                values    = ["https"]
+                if_exists = "OVERWRITE"
+              }
+              items {
+                name      = "Forwarded"
+                values    = ["host=${oci_apigateway_gateway.app[0].hostname};proto=https"]
+                if_exists = "OVERWRITE"
+              }
+            }
+          }
+        }
+        backend {
+          type                       = "HTTP_BACKEND"
+          url                        = "https://${routes.value}/adb/$${request.path[p]}"
           connect_timeout_in_seconds = 10
           read_timeout_in_seconds    = 300
           send_timeout_in_seconds    = 300
@@ -245,9 +308,12 @@ output "private_ip" {
 }
 
 output "urls" {
+  # in the containers' declared order (the first container is the one "Open" goes to):
+  # a set of ports sorts numerically and once put an MCP endpoint (8765) before its
+  # Studio (8770), so "Open" landed on a JSON-RPC endpoint that no browser can show
   value = concat(
     var.gateway ? ["https://${oci_apigateway_gateway.app[0].hostname}"] : [],
-    [for p in local.ports : "http://${coalesce(data.oci_core_vnic.app.public_ip_address, data.oci_core_vnic.app.private_ip_address)}:${p}"],
+    [for c in var.containers : "http://${coalesce(data.oci_core_vnic.app.public_ip_address, data.oci_core_vnic.app.private_ip_address)}:${c.port}" if c.port != null],
   )
 }
 

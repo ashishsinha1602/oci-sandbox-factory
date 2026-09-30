@@ -106,6 +106,12 @@ variable "adb_tier" {
   }
 }
 
+variable "adb_public" {
+  type        = bool
+  default     = false
+  description = "Paid database on a public endpoint (allow-list + password). The worker sets it when no app gateway will proxy to the database."
+}
+
 variable "adb_workload" {
   type        = string
   default     = "OLTP"

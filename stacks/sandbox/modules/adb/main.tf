@@ -21,6 +21,11 @@ variable "db_version" {
   type    = string
   default = "23ai"
 }
+variable "public" {
+  type        = bool
+  default     = false
+  description = "Paid tier on a public endpoint (allow-list + password, like the factory's own control database) instead of a private endpoint: for a database no app gateway can proxy to."
+}
 variable "defined_tags" { type = map(string) }
 variable "freeform_tags" { type = map(string) }
 
@@ -28,8 +33,10 @@ locals {
   free = var.tier == "free"
   # Letters and digits only, starts with a letter, max 14 chars.
   db_name = substr(upper(replace(var.name, "-", "")), 0, 14)
-  # Public, free-tier database: an allow-list lets us drop mTLS (no wallet).
-  public_acl = local.free && length(var.allowed_cidrs) > 0
+  # A private endpoint only for a paid database an app gateway proxies to; a database the
+  # browser must reach itself (no app in front of it) is public, behind its allow-list and password.
+  private    = !local.free && !var.public
+  public_acl = !local.private && length(var.allowed_cidrs) > 0
 }
 
 # 12-30 chars, upper + lower + digit, no double quote, must not contain "admin".
@@ -43,7 +50,7 @@ resource "random_password" "admin" {
 }
 
 resource "oci_core_network_security_group" "adb" {
-  count          = local.free ? 0 : 1
+  count          = local.private ? 1 : 0
   compartment_id = var.compartment_id
   vcn_id         = var.vcn_id
   display_name   = "${var.name}-adb"
@@ -52,7 +59,7 @@ resource "oci_core_network_security_group" "adb" {
 }
 
 resource "oci_core_network_security_group_security_rule" "adb_in" {
-  count                     = local.free ? 0 : 1
+  count                     = local.private ? 1 : 0
   network_security_group_id = oci_core_network_security_group.adb[0].id
   direction                 = "INGRESS"
   protocol                  = "6"
@@ -73,7 +80,7 @@ resource "oci_core_network_security_group_security_rule" "adb_in" {
 # between the two in the dependency chain, so on destroy Terraform removes the
 # database, waits, then removes the group.
 resource "time_sleep" "nsg_release" {
-  count            = local.free ? 0 : 1
+  count            = local.private ? 1 : 0
   destroy_duration = "180s"
   depends_on       = [oci_core_network_security_group.adb]
 }
@@ -98,12 +105,12 @@ resource "oci_database_autonomous_database" "this" {
   # free  -> public endpoint, IP allow-list
   # paid  -> private endpoint in the shared private subnet
   whitelisted_ips = local.public_acl ? var.allowed_cidrs : null
-  subnet_id       = local.free ? null : var.subnet_id
-  nsg_ids         = local.free ? null : [oci_core_network_security_group.adb[0].id]
+  subnet_id       = local.private ? var.subnet_id : null
+  nsg_ids         = local.private ? [oci_core_network_security_group.adb[0].id] : null
 
   depends_on                  = [time_sleep.nsg_release]
-  private_endpoint_label      = local.free ? null : replace(var.name, "-", "")
-  is_mtls_connection_required = local.public_acl || !local.free ? false : true
+  private_endpoint_label      = local.private ? replace(var.name, "-", "") : null
+  is_mtls_connection_required = local.public_acl || local.private ? false : true
 
   defined_tags  = var.defined_tags
   freeform_tags = var.freeform_tags
@@ -134,7 +141,7 @@ output "admin_password" {
 locals {
   low_connect  = try(oci_database_autonomous_database.this.connection_strings[0].all_connection_strings["LOW"], "")
   low_host     = length(split("/", local.low_connect)) > 1 ? split("/", local.low_connect)[0] : ""
-  private_fqdn = local.free ? "" : try(oci_database_autonomous_database.this.private_endpoint, "")
+  private_fqdn = local.private ? try(oci_database_autonomous_database.this.private_endpoint, "") : ""
 
   # The port is NOT the same on both tiers. A public free-tier database serves
   # server-auth TLS on 1522 and mutual TLS on 1521; a private endpoint inverts
@@ -159,6 +166,11 @@ output "sql_web_url" {
 
 output "apex_url" {
   value = try(oci_database_autonomous_database.this.connection_urls[0].apex_url, "")
+}
+
+output "private" {
+  description = "true when the database is on a private endpoint (its web tools open only through the app gateway)"
+  value       = local.private
 }
 
 output "private_fqdn" {

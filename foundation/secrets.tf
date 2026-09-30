@@ -35,8 +35,23 @@ resource "oci_kms_key" "secrets" {
   }
 }
 
-# Streaming with Apache Kafka writes each cluster's superuser password into
-# the sandbox's secret. Tenancy-level, like the other service grants here.
+# Streaming with Apache Kafka attaches its brokers to the shared VCN: needed for every
+# cluster, vault or not (without it a cluster fails with "Subnet ... not accessible";
+# clean install without a vault, 2026-09-30).
+resource "oci_identity_policy" "kafka_network" {
+  count          = local.free ? 0 : 1
+  provider       = oci.home
+  compartment_id = var.tenancy_ocid
+  name           = "${var.prefix}-kafka-network"
+  description    = "Streaming with Apache Kafka attaches each sandbox cluster to the shared VCN; the public add-on needs the sandboxes side too."
+  statements = [
+    "allow service rawfka to use virtual-network-family in compartment id ${oci_identity_compartment.control.id}",
+    "allow service rawfka to use virtual-network-family in compartment id ${oci_identity_compartment.sandboxes.id}",
+  ]
+}
+
+# ...and writes each cluster's superuser password into the sandbox's secret, which
+# is what the public add-on's SASL login needs. Only with the vault.
 resource "oci_identity_policy" "kafka_superuser" {
   count          = (local.free || !var.enable_vault) ? 0 : 1
   provider       = oci.home
@@ -46,9 +61,6 @@ resource "oci_identity_policy" "kafka_superuser" {
   statements = [
     "allow service rawfka to {SECRET_UPDATE} in compartment id ${oci_identity_compartment.sandboxes.id}",
     "allow service rawfka to use secrets in compartment id ${oci_identity_compartment.sandboxes.id} where request.operation = 'UpdateSecret'",
-    # brokers attach to the shared VCN in sbx-control; the public add-on needs the sandboxes side too
-    "allow service rawfka to use virtual-network-family in compartment id ${oci_identity_compartment.control.id}",
-    "allow service rawfka to use virtual-network-family in compartment id ${oci_identity_compartment.sandboxes.id}",
     "allow service rawfka to read secrets in compartment id ${oci_identity_compartment.sandboxes.id}",
   ]
 }
