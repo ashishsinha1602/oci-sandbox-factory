@@ -253,19 +253,34 @@ module "catalog" {
   depends_on = [time_sleep.iam_propagation]
 }
 
+# The private hostnames a Spark job may need: the shared database that holds
+# this sandbox's schema (ADB_CONNECT_STRING is host:port/service), the
+# sandbox's own database, the extra ones. An Always Free database is public
+# (adb.<region>.oraclecloud.com) and needs no private endpoint. The host is
+# not a secret, so the count of the private endpoint may depend on it.
+locals {
+  dataflow_db_hosts = distinct([for h in concat(
+    [try(nonsensitive(split(":", lookup(var.external_db, "ADB_CONNECT_STRING", ""))[0]), "")],
+    var.enable_adb ? [module.adb[0].private_fqdn] : [],
+    [for k, m in module.adb_extra : m.private_fqdn]
+  ) : h if h != "" && !startswith(h, "adb.")])
+}
+
 module "dataflow" {
   count  = length(var.dataflow_jobs) > 0 ? 1 : 0
   source = "./modules/dataflow"
 
-  compartment_id  = local.compartment_id
-  name            = local.name
-  jobs            = var.dataflow_jobs
-  logs_bucket_uri = "oci://${module.storage[0].buckets[0].name}@${module.storage[0].namespace}/"
-  scripts_bucket  = module.storage[0].buckets[0].name
-  namespace       = module.storage[0].namespace
-  injected_env    = local.injected_env
-  defined_tags    = local.defined_tags
-  freeform_tags   = local.freeform_tags
+  compartment_id    = local.compartment_id
+  name              = local.name
+  jobs              = var.dataflow_jobs
+  logs_bucket_uri   = "oci://${module.storage[0].buckets[0].name}@${module.storage[0].namespace}/"
+  scripts_bucket    = module.storage[0].buckets[0].name
+  namespace         = module.storage[0].namespace
+  injected_env      = local.injected_env
+  private_subnet_id = var.private_subnet_id
+  db_hosts          = local.dataflow_db_hosts
+  defined_tags      = local.defined_tags
+  freeform_tags     = local.freeform_tags
 
   depends_on = [module.storage]
 }

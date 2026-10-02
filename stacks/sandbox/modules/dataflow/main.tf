@@ -52,6 +52,16 @@ variable "injected_env" {
   type    = map(string)
   default = {}
 }
+variable "private_subnet_id" {
+  description = "The install's private subnet. With db_hosts, a Data Flow private endpoint is created in it so a run reaches the sandbox database, which is private and never public."
+  type        = string
+  default     = ""
+}
+variable "db_hosts" {
+  description = "Private hostnames of the databases a job may use: the shared database that holds this sandbox's schema, its own databases. Each is a DNS zone of the private endpoint; with any, the Oracle JDBC driver goes on the Spark classpath."
+  type        = list(string)
+  default     = []
+}
 variable "defined_tags" { type = map(string) }
 variable "freeform_tags" { type = map(string) }
 
@@ -68,6 +78,39 @@ resource "oci_objectstorage_object" "script" {
   bucket    = var.scripts_bucket
   object    = "${each.value.name}.py"
   content   = each.value.script
+}
+
+# The sandbox database is reachable only inside the VCN, and a Data Flow run
+# starts outside it: a private endpoint (one per sandbox with a database and a
+# job, five per tenancy) carries the run in. A private Autonomous Database is
+# named by its full host name in dns_zones (zones under oraclecloud.com must be
+# complete). With a database, Spark also gets Oracle's JDBC driver: Data Flow
+# ships it only when asked, and without it a job writing to the database dies
+# with ClassNotFoundException oracle.jdbc.OracleDriver.
+locals {
+  db      = length(var.db_hosts) > 0 && var.private_subnet_id != ""
+  db_conf = length(var.db_hosts) > 0 ? { "spark.oracle.datasource.enabled" = "true" } : {}
+  # ADB_CONNECT_STRING is host:port/service; the database accepts only TLS, so
+  # the job gets a ready JDBC URL (spark.sandbox.ADB_JDBC_URL) with a TCPS descriptor.
+  cs       = lookup(var.injected_env, "ADB_CONNECT_STRING", "")
+  cs_hp    = length(split("/", local.cs)) > 1 ? split("/", local.cs)[0] : ""
+  cs_host  = length(split(":", local.cs_hp)) > 1 ? split(":", local.cs_hp)[0] : ""
+  cs_port  = length(split(":", local.cs_hp)) > 1 ? split(":", local.cs_hp)[1] : "1521"
+  cs_srv   = length(split("/", local.cs)) > 1 ? split("/", local.cs)[1] : ""
+  jdbc_url = local.cs == "" ? "" : (startswith(trimspace(local.cs), "(") ? "jdbc:oracle:thin:@${local.cs}" : (local.cs_host == "" ? "" : "jdbc:oracle:thin:@(description=(retry_count=5)(retry_delay=3)(address=(protocol=tcps)(port=${local.cs_port})(host=${local.cs_host}))(connect_data=(service_name=${local.cs_srv}))(security=(ssl_server_dn_match=yes)))"))
+  jdbc     = local.jdbc_url == "" ? {} : { "spark.sandbox.ADB_JDBC_URL" = local.jdbc_url }
+}
+
+resource "oci_dataflow_private_endpoint" "db" {
+  count = local.db ? 1 : 0
+
+  compartment_id = var.compartment_id
+  display_name   = "${var.name}-dataflow"
+  description    = "Lets this sandbox's Spark runs reach its database on the private subnet."
+  subnet_id      = var.private_subnet_id
+  dns_zones      = var.db_hosts
+  defined_tags   = var.defined_tags
+  freeform_tags  = var.freeform_tags
 }
 
 # A Data Flow application is a job definition, not a running cluster. Spark is
@@ -88,8 +131,9 @@ resource "oci_dataflow_application" "this" {
   arguments            = each.value.arguments
   logs_bucket_uri      = var.logs_bucket_uri
   warehouse_bucket_uri = each.value.warehouse_uri
+  private_endpoint_id  = local.db ? oci_dataflow_private_endpoint.db[0].id : null
   # Spark exposes only spark.* properties: the sandbox settings become spark.sandbox.<KEY>
-  configuration = merge({ for k, v in var.injected_env : "spark.sandbox.${k}" => v }, each.value.spark_conf, each.value.iceberg ? local.iceberg_conf : {})
+  configuration = merge({ for k, v in var.injected_env : "spark.sandbox.${k}" => v }, local.jdbc, local.db_conf, each.value.spark_conf, each.value.iceberg ? local.iceberg_conf : {})
   defined_tags  = var.defined_tags
   freeform_tags = var.freeform_tags
 
@@ -131,20 +175,21 @@ resource "oci_objectstorage_object" "iceberg_query" {
 resource "oci_dataflow_application" "iceberg_query" {
   count = local.iceberg ? 1 : 0
 
-  compartment_id  = var.compartment_id
-  display_name    = "${var.name}-iceberg-query"
-  description     = "Run with the parameter sql to query the Iceberg tables; empty lists every table with its row count."
-  file_uri        = "oci://${var.scripts_bucket}@${var.namespace}/iceberg-query.py"
-  language        = "PYTHON"
-  spark_version   = "3.5.0"
-  num_executors   = 1
-  driver_shape    = "VM.Standard.E4.Flex"
-  executor_shape  = "VM.Standard.E4.Flex"
-  arguments       = ["$${sql}"]
-  logs_bucket_uri = var.logs_bucket_uri
-  configuration   = merge({ for k, v in var.injected_env : "spark.sandbox.${k}" => v }, local.iceberg_conf)
-  defined_tags    = var.defined_tags
-  freeform_tags   = var.freeform_tags
+  compartment_id      = var.compartment_id
+  display_name        = "${var.name}-iceberg-query"
+  description         = "Run with the parameter sql to query the Iceberg tables; empty lists every table with its row count."
+  file_uri            = "oci://${var.scripts_bucket}@${var.namespace}/iceberg-query.py"
+  language            = "PYTHON"
+  spark_version       = "3.5.0"
+  num_executors       = 1
+  driver_shape        = "VM.Standard.E4.Flex"
+  executor_shape      = "VM.Standard.E4.Flex"
+  arguments           = ["$${sql}"]
+  logs_bucket_uri     = var.logs_bucket_uri
+  private_endpoint_id = local.db ? oci_dataflow_private_endpoint.db[0].id : null
+  configuration       = merge({ for k, v in var.injected_env : "spark.sandbox.${k}" => v }, local.jdbc, local.db_conf, local.iceberg_conf)
+  defined_tags        = var.defined_tags
+  freeform_tags       = var.freeform_tags
 
   parameters {
     name  = "sql"
