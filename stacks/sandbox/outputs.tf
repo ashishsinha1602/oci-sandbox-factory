@@ -43,14 +43,15 @@ output "consoles" {
     data_catalog   = "https://console.${var.region}.oraclecloud.com/datacatalogexplorer"
     object_storage = "https://cloud.oracle.com/object-storage/buckets?region=${var.region}&compartmentId=${local.compartment_id}"
     functions      = "https://cloud.oracle.com/functions/applications?region=${var.region}&compartmentId=${local.compartment_id}"
-    queues         = "https://cloud.oracle.com/queue/queues?region=${var.region}&compartmentId=${local.compartment_id}"
+    queues         = "https://cloud.oracle.com/queues/queues?region=${var.region}&compartmentId=${local.compartment_id}"
     nosql          = "https://cloud.oracle.com/nosql/tables?region=${var.region}&compartmentId=${local.compartment_id}"
   }
 }
 
 output "aidp" {
   value = var.enable_aidp ? merge(module.aidp[0].aidp, {
-    console_url = "https://cloud.oracle.com/ai-data-platform?region=${var.region}&compartmentId=${local.compartment_id}"
+    # the console has no addressable AI Data Platform list page (every guessed path is "Page not found", 2026-09-30): the resource search by name lands
+    console_url = "https://cloud.oracle.com/search?q=${urlencode(module.aidp[0].aidp.display_name)}&category=resources&region=${var.region}"
   }) : null
 }
 
@@ -117,7 +118,7 @@ output "kafka" {
     public_bootstrap    = module.kafka[0].public_bootstrap
     superuser_secret_id = module.kafka[0].superuser_secret_id
     public_cidrs        = module.kafka[0].public_cidrs
-    console_url         = module.kafka[0].pool_id != null ? "https://cloud.oracle.com/storage/streaming/streampools/${module.kafka[0].pool_id}?region=${var.region}" : "https://cloud.oracle.com/kafka/clusters?region=${var.region}&compartmentId=${local.compartment_id}"
+    console_url         = module.kafka[0].pool_id != null ? "https://cloud.oracle.com/storage/streaming/streampools/${module.kafka[0].pool_id}?region=${var.region}" : "https://cloud.oracle.com/osak/kafka-clusters/${module.kafka[0].cluster_id}?region=${var.region}"
   } : null
 }
 

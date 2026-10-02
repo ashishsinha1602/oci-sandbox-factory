@@ -34,7 +34,7 @@ That is normal. The stack outputs give you:
 
 | Ask for | You get |
 |---|---|
-| A database to explore or to wire into agents | Autonomous Database with Select AI and REST, the Studio chat UI, an MCP endpoint |
+| A database to explore or to wire into agents | A schema of its own (user, password, SQL Developer Web, REST, an APEX workspace, Select AI) in the install's one shared Autonomous Database, or a whole database when you ask for one; the Studio chat UI, an MCP endpoint |
 | Your app from a Git folder with a Dockerfile | The image built inside OCI and served on HTTPS |
 | An AWS Lambda, or any small handler | An OCI Function, with Lambda code run unchanged, optionally on a schedule |
 | A Glue or Spark job | A Data Flow application, optionally writing Iceberg tables to Object Storage, plus a query application to read them |
@@ -44,6 +44,18 @@ That is normal. The stack outputs give you:
 The assistant builds the design you name, and nothing you did not ask for. It
 writes the code when you describe it and have none, and it shows the monthly
 cost of every part before anything is created.
+
+## One database, a schema per sandbox
+
+Since 1.2 a sandbox that asks for a database gets a **schema of its own** in one private
+Autonomous Database the install owns, instead of a database of its own: its own user and
+password, SQL Developer Web, a REST endpoint for every table, an APEX workspace and Select AI
+over its tables, ready in seconds. Nobody sees another sandbox's tables. The shared database
+is stopped while no sandbox uses it, so an idle install pays for storage only. Switch on
+**Own database** on the form (or say so in the chat) for a whole database; the RAG starters
+always get one, for their vector store. On the Free Tier edition the control database doubles
+as the shared one, so the second Always Free database stays available for a sandbox that
+needs its own.
 
 ## Install
 

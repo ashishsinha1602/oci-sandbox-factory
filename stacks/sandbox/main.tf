@@ -150,7 +150,10 @@ locals {
       ADB_DB_NAME        = module.adb[0].db_name
       ADB_CONNECT_STRING = module.adb[0].connect_string
       ADB_ADMIN_PASSWORD = module.adb[0].admin_password
+      ADB_USER           = "ADMIN"
     } : {},
+    # the install's shared database (a schema of this sandbox's own), provisioned by the worker
+    var.external_db,
     var.enable_kafka ? {
       KAFKA_BOOTSTRAP_SERVERS = module.kafka[0].bootstrap_servers
     } : {},
@@ -362,8 +365,9 @@ module "app" {
   compartment_id   = local.compartment_id
   name             = local.name
   vcn_id           = var.vcn_id
-  subnet_id        = var.app_public ? var.public_subnet_id : var.private_subnet_id
-  public           = var.app_public
+  subnet_id        = (var.app_public || var.app_websocket) ? var.public_subnet_id : var.private_subnet_id
+  public           = var.app_public || var.app_websocket
+  websocket        = var.app_websocket
   allowed_cidr     = var.allowed_cidr
   containers       = local.app_containers
   shape            = var.app_shape

@@ -246,7 +246,7 @@ def load_gold_to_oracle(**ctx):
     import oracledb
     ns = ctx["ti"].xcom_pull(task_ids="land_raw_readings") or NAMESPACE
     base = f"https://objectstorage.{_region()}.oraclecloud.com/n/{ns}/b/{BUCKET}/o/"
-    with oracledb.connect(user="ADMIN", password=pw, dsn=_adb_dsn(connect)) as db:
+    with oracledb.connect(user=os.environ.get("ADB_USER", "ADMIN"), password=pw, dsn=_adb_dsn(connect)) as db:
         cur = db.cursor()
         # The database reads the bucket as itself (resource principal), no keys.
         try:

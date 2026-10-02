@@ -27,7 +27,7 @@ host, dbport = host_port.split(":")
 dsn = (f"(description=(retry_count=20)(retry_delay=3)(address=(protocol=tcps)(port={dbport})(host={host}))"
        f"(connect_data=(service_name={service}))(security=(ssl_server_dn_match=yes)))")
 os.environ["SCHEMAGATE_DATABASE_URL"] = "oracle+oracledb://@"
-os.environ["SCHEMAGATE_CONNECT_ARGS"] = json.dumps({"user": "ADMIN", "password": password, "dsn": dsn})
+os.environ["SCHEMAGATE_CONNECT_ARGS"] = json.dumps({"user": os.environ.get("ADB_USER", "ADMIN"), "password": password, "dsn": dsn})
 
 import oracledb  # noqa: E402
 
@@ -74,7 +74,7 @@ SEED = [
 
 for attempt in range(30):
     try:
-        with oracledb.connect(user="ADMIN", password=password, dsn=dsn) as c:
+        with oracledb.connect(user=os.environ.get("ADB_USER", "ADMIN"), password=password, dsn=dsn) as c:
             cur = c.cursor()
             cur.execute("select count(*) from user_tables")
             n = cur.fetchone()[0]

@@ -112,6 +112,13 @@ variable "adb_public" {
   description = "Paid database on a public endpoint (allow-list + password). The worker sets it when no app gateway will proxy to the database."
 }
 
+variable "external_db" {
+  type        = map(string)
+  default     = {}
+  sensitive   = true
+  description = "A database this sandbox uses but does not create (the install's shared database, one schema per sandbox): ADB_DB_NAME, ADB_CONNECT_STRING, ADB_USER, ADB_ADMIN_PASSWORD. Injected into every container."
+}
+
 variable "adb_workload" {
   type        = string
   default     = "OLTP"
@@ -367,6 +374,12 @@ variable "functions_gateway" {
   type        = bool
   default     = true
   description = "Front every function with an API Gateway so it has a plain HTTPS URL. Off when the region's gateway limit is used up."
+}
+
+variable "app_websocket" {
+  type        = bool
+  default     = false
+  description = "The app needs WebSockets (Streamlit, Jupyter, n8n, code-server), which OCI API Gateway does not carry: the container gets a public IP and is served over HTTP; the gateway, when there is one, is only the door to the private database (/ords, /adb)."
 }
 
 variable "app_gateway" {

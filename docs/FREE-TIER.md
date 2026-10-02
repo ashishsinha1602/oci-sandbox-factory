@@ -25,7 +25,7 @@ These are not part of Always Free, so the factory says so instead of failing min
 - Data Catalog
 - Queue
 - AI Data Platform
-- A second sandbox database (Always Free allows two per tenancy; the factory's control database is one of them)
+- A second sandbox database of its own (Always Free allows two per tenancy; the factory's control database is one of them, and it doubles as the shared database every sandbox gets a schema in)
 - Paid database tiers, and Select AI (OCI Generative AI)
 
 The chat declines them with the free alternative. A request that still carries one of them is
@@ -46,8 +46,10 @@ these URLs; put your own domain and certificate in front if you need one.
 - Always Free resources live in your **home region**; install there.
 - Always Free capacity is shared; a VM or database can be refused with "out of capacity" at busy
   times. Try again later, it is not a factory error.
-- One free database slot is left after the control database, so one database sandbox at a time.
-  Destroy it (or let it expire) before creating the next.
+- A sandbox that asks for a database gets a schema of its own in the control database (since 1.2):
+  as many as you like, in seconds. One free database slot is left for a sandbox that needs a
+  database of its own (**Own database** on the form, or a RAG starter); destroy it (or let it
+  expire) before creating the next.
 - Free Tier tenancies are limited to 2 VCNs; the factory uses one.
 
 ## Upgrading later

@@ -139,7 +139,7 @@ locals {
   free_apps = local.free && can(regex("A1", var.worker_shape))
 
   # One environment for both shapes, so the worker behaves the same wherever it runs.
-  worker_env = {
+  worker_env_base = {
     SBX_PREFIX    = var.prefix
     SBX_EDITION   = var.edition
     SBX_FREE_APPS = local.free_apps ? "1" : "0"
@@ -166,6 +166,8 @@ locals {
     OCIR_USER  = local.ocir_user
     OCIR_TOKEN = local.ocir_token
   }
+  # the standard edition's shared database (shared_db.tf); the Free Tier edition uses the control database
+  worker_env = merge(local.worker_env_base, local.shared_db_env)
 }
 
 data "oci_identity_availability_domains" "worker" {

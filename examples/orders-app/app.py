@@ -31,7 +31,7 @@ def dsn() -> str:
 
 
 def db():
-    return oracledb.connect(user="ADMIN", password=PASSWORD, dsn=dsn())
+    return oracledb.connect(user=os.environ.get("ADB_USER", "ADMIN"), password=PASSWORD, dsn=dsn())
 
 
 def init():

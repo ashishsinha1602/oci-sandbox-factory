@@ -95,6 +95,18 @@ resource "oci_apigateway_deployment" "db" {
         send_timeout_in_seconds    = 300
       }
     }
+    # APEX's stylesheets, scripts and images: /i/ on the database host (without it APEX renders as raw HTML)
+    routes {
+      path    = "/i/{p*}"
+      methods = ["GET", "HEAD"]
+      backend {
+        type                       = "HTTP_BACKEND"
+        url                        = "https://${module.adb[0].private_fqdn}/i/$${request.path[p]}"
+        connect_timeout_in_seconds = 10
+        read_timeout_in_seconds    = 300
+        send_timeout_in_seconds    = 300
+      }
+    }
     routes {
       # the gateway's root: straight to Database Actions
       path    = "/"

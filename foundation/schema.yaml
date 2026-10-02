@@ -41,6 +41,7 @@ variableGroups:
   - title: Capacity
     variables:
       - worker_count
+      - shared_database
       - enable_aidp
 
   - title: Registry login (optional)
@@ -58,6 +59,8 @@ variableGroups:
       - quota_limits
       - worker_image
       - enable_vault
+      - shared_database_ecpus
+      - shared_database_storage_gb
       - control_adb_allowed_cidrs
       - admin_cidr
       - vcn_cidr
@@ -172,6 +175,39 @@ variables:
         - edition
         - standard
 
+  shared_database:
+    type: boolean
+    title: One shared database for every sandbox
+    description: "Each sandbox with a database gets a schema of its own (user, password, SQL Developer Web, REST, APEX workspace, Select AI) in one private Autonomous Database, stopped while no sandbox uses it. Off: every sandbox gets a database of its own. A sandbox can still ask for its own database either way."
+    default: true
+    visible:
+      eq:
+        - edition
+        - standard
+  shared_database_ecpus:
+    type: number
+    title: Shared database ECPUs
+    description: 2 is the minimum; auto-scaling lets it burst to three times this.
+    default: 2
+    minimum: 2
+    visible:
+      and:
+        - shared_database
+        - eq:
+            - edition
+            - standard
+  shared_database_storage_gb:
+    type: number
+    title: Shared database storage (GB)
+    description: For every sandbox schema together.
+    default: 50
+    minimum: 20
+    visible:
+      and:
+        - shared_database
+        - eq:
+            - edition
+            - standard
   enable_aidp:
     type: boolean
     title: Allow Oracle AI Data Platform
