@@ -46,7 +46,9 @@ variable "ocir_token" {
 }
 
 locals {
-  make_token   = var.enable_worker && var.ocir_token == "" && var.current_user_ocid != ""
+  # Free Tier builds and runs images on its own VM and never pushes to OCIR, so it needs no auth token
+  # (a user has at most two, and an older install often holds them).
+  make_token   = var.enable_worker && var.ocir_token == "" && var.current_user_ocid != "" && var.edition != "free"
   ocir_user    = var.ocir_user != "" ? var.ocir_user : (local.make_token ? data.oci_identity_user.installer[0].name : "")
   ocir_token   = var.ocir_token != "" ? var.ocir_token : (local.make_token ? oci_identity_auth_token.ocir[0].token : "")
   worker_names = [for n in range(var.worker_count) : n == 0 ? "${var.prefix}-worker" : "${var.prefix}-worker-${n + 1}"]
