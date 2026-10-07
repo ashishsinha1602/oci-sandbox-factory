@@ -3,8 +3,8 @@
 One Resource Manager stack (`foundation/`) installs everything. This page lists
 exactly what the **installer** needs, what the **factory itself** is granted, and
 what an **end user** needs, so it can be reviewed before anything is created.
-Every name below starts with the install prefix (`sbx` by default); a second
-install in the same tenancy uses another prefix.
+Every name below starts with the install prefix you type on the form (shown here as `sbx`);
+a second install in the same tenancy uses another prefix.
 
 ```
 tenancy

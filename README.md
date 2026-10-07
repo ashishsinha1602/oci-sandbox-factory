@@ -1,15 +1,19 @@
 # Sandbox Factory for Oracle Cloud
 
-Self-service OCI sandboxes that build themselves from a chat and delete themselves
-when their time is up.
+**Cloud sandboxes that build themselves from a chat and delete themselves when their time is up.** No tickets, no forgotten test databases on next month's bill.
+
+[![Two-minute demo: a sandbox requested in chat, built, and deleted on expiry](https://img.youtube.com/vi/nuHfzOqG4io/maxresdefault.jpg)](https://www.youtube.com/watch?v=nuHfzOqG4io)
+
+- **Free Tier: $0.** One click installs it on Always Free resources, no credit card.
+- **Every sandbox has an end date** (1 to 30 days), then it is destroyed. Nothing to remember.
+- **The cost of every part is shown before anything is built**, from Oracle's live price list.
+
+If it saves you a ticket or a surprise bill, a ⭐ helps other Oracle Cloud users find it.
 
 A user describes what they need, in plain words or as an AWS-to-OCI mapping, or
-hands over a Git folder. The factory plans it, prices it from Oracle's live price
-list, and builds it in your tenancy with Terraform on Resource Manager. They get
-links, credentials and logs on a card, and the sandbox is destroyed when its
-lifetime ends, after 1 to 30 days.
-
-**Two-minute demo:** https://www.youtube.com/watch?v=nuHfzOqG4io
+hands over a Git folder. The factory plans it, prices it, and builds it in your
+tenancy with Terraform on Resource Manager. They get links, credentials and logs
+on a card, and the sandbox is destroyed when its lifetime ends.
 
 Also on the [Terraform Registry](https://registry.terraform.io/modules/ashishsinha1602/sandbox-factory/oci/latest) as `ashishsinha1602/sandbox-factory/oci`.
 
