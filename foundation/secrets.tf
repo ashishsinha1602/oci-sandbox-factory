@@ -8,7 +8,7 @@
 resource "oci_kms_vault" "secrets" {
   count          = (local.free || !var.enable_vault) ? 0 : 1
   compartment_id = oci_identity_compartment.control.id
-  display_name   = "${var.prefix}-secrets"
+  display_name   = "${local.prefix}-secrets"
   vault_type     = "DEFAULT"
 }
 
@@ -26,7 +26,7 @@ resource "time_sleep" "vault_dns" {
 resource "oci_kms_key" "secrets" {
   count               = (local.free || !var.enable_vault) ? 0 : 1
   compartment_id      = oci_identity_compartment.control.id
-  display_name        = "${var.prefix}-secrets-key"
+  display_name        = "${local.prefix}-secrets-key"
   management_endpoint = time_sleep.vault_dns[0].triggers["management_endpoint"]
   protection_mode     = "SOFTWARE"
   key_shape {
@@ -42,7 +42,7 @@ resource "oci_identity_policy" "kafka_network" {
   count          = local.free ? 0 : 1
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-kafka-network"
+  name           = "${local.prefix}-kafka-network"
   description    = "Streaming with Apache Kafka attaches each sandbox cluster to the shared VCN; the public add-on needs the sandboxes side too."
   statements = [
     "allow service rawfka to use virtual-network-family in compartment id ${oci_identity_compartment.control.id}",
@@ -56,7 +56,7 @@ resource "oci_identity_policy" "kafka_superuser" {
   count          = (local.free || !var.enable_vault) ? 0 : 1
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-kafka-superuser"
+  name           = "${local.prefix}-kafka-superuser"
   description    = "Streaming with Apache Kafka writes each sandbox superuser password into that sandbox Vault secret."
   statements = [
     "allow service rawfka to {SECRET_UPDATE} in compartment id ${oci_identity_compartment.sandboxes.id}",

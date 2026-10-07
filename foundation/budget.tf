@@ -4,8 +4,8 @@
 resource "oci_budget_budget" "sandbox" {
   provider               = oci.home
   compartment_id         = var.tenancy_ocid
-  display_name           = "${var.prefix}-monthly"
-  description            = "Monthly cap for the ${var.prefix} sandbox tree."
+  display_name           = "${local.prefix}-monthly"
+  description            = "Monthly cap for the ${local.prefix} sandbox tree."
   amount                 = var.budget_amount
   reset_period           = "MONTHLY"
   processing_period_type = "MONTH"
@@ -19,7 +19,7 @@ resource "oci_budget_alert_rule" "actual" {
   for_each = toset([for t in var.budget_alert_thresholds : tostring(t)])
 
   budget_id      = oci_budget_budget.sandbox.id
-  display_name   = "${var.prefix}-actual-${each.key}pct"
+  display_name   = "${local.prefix}-actual-${each.key}pct"
   type           = "ACTUAL"
   threshold      = tonumber(each.key)
   threshold_type = "PERCENTAGE"
@@ -31,7 +31,7 @@ resource "oci_budget_alert_rule" "actual" {
 resource "oci_budget_alert_rule" "forecast" {
   provider       = oci.home
   budget_id      = oci_budget_budget.sandbox.id
-  display_name   = "${var.prefix}-forecast-100pct"
+  display_name   = "${local.prefix}-forecast-100pct"
   type           = "FORECAST"
   threshold      = 100
   threshold_type = "PERCENTAGE"

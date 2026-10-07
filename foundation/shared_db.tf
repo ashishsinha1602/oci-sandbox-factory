@@ -48,7 +48,7 @@ resource "oci_core_network_security_group" "shared_adb" {
   count          = local.shared_db ? 1 : 0
   compartment_id = oci_identity_compartment.sandboxes.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-shared-db"
+  display_name   = "${local.prefix}-shared-db"
   freeform_tags  = local.freeform_tags
 }
 
@@ -78,8 +78,8 @@ resource "time_sleep" "shared_adb_nsg_release" {
 resource "oci_database_autonomous_database" "shared" {
   count          = local.shared_db ? 1 : 0
   compartment_id = oci_identity_compartment.sandboxes.id
-  db_name        = substr(upper(replace("${var.prefix}shared", "-", "")), 0, 14)
-  display_name   = "${var.prefix}-shared-db"
+  db_name        = substr(upper(replace("${local.prefix}shared", "-", "")), 0, 14)
+  display_name   = "${local.prefix}-shared-db"
   db_workload    = "OLTP"
   admin_password = random_password.shared_adb_admin[0].result
   license_model  = "LICENSE_INCLUDED"
@@ -92,7 +92,7 @@ resource "oci_database_autonomous_database" "shared" {
 
   subnet_id                   = oci_core_subnet.private.id
   nsg_ids                     = [oci_core_network_security_group.shared_adb[0].id]
-  private_endpoint_label      = replace("${var.prefix}shareddb", "-", "")
+  private_endpoint_label      = replace("${local.prefix}shareddb", "-", "")
   is_mtls_connection_required = false
 
   freeform_tags = merge(local.freeform_tags, { role = "shared-database" })
@@ -130,7 +130,7 @@ resource "oci_apigateway_gateway" "shared_db" {
   compartment_id = oci_identity_compartment.sandboxes.id
   endpoint_type  = "PUBLIC"
   subnet_id      = oci_core_subnet.public.id
-  display_name   = "${var.prefix}-shared-db-gw"
+  display_name   = "${local.prefix}-shared-db-gw"
   freeform_tags  = local.freeform_tags
 
   depends_on = [oci_identity_policy.apigateway_network, time_sleep.worker_iam]
@@ -141,7 +141,7 @@ resource "oci_apigateway_deployment" "shared_db" {
   compartment_id = oci_identity_compartment.sandboxes.id
   gateway_id     = oci_apigateway_gateway.shared_db[0].id
   path_prefix    = "/"
-  display_name   = "${var.prefix}-shared-db"
+  display_name   = "${local.prefix}-shared-db"
   freeform_tags  = local.freeform_tags
 
   specification {

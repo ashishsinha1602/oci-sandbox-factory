@@ -33,7 +33,7 @@ resource "oci_limits_quota" "sandbox" {
   for_each = var.enable_quotas ? local.quota_statements : {}
 
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-${each.key}"
+  name           = "${local.prefix}-${each.key}"
   description    = "Sandbox factory cap for ${each.key}."
   statements     = each.value
   freeform_tags  = local.freeform_tags

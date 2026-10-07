@@ -4,7 +4,7 @@
 resource "oci_identity_tag_namespace" "sandbox" {
   provider       = oci.home
   compartment_id = oci_identity_compartment.root.id
-  name           = var.prefix
+  name           = local.prefix
   description    = "Sandbox factory tags."
   is_retired     = false
   freeform_tags  = local.freeform_tags

@@ -25,8 +25,8 @@ resource "random_password" "control_adb_admin" {
 resource "oci_database_autonomous_database" "control" {
   count          = var.enable_control_adb ? 1 : 0
   compartment_id = oci_identity_compartment.control.id
-  db_name        = upper(replace("${var.prefix}ctl", "-", ""))
-  display_name   = "${var.prefix}-control-db"
+  db_name        = upper(replace("${local.prefix}ctl", "-", ""))
+  display_name   = "${local.prefix}-control-db"
   db_workload    = "OLTP"
   admin_password = random_password.control_adb_admin[0].result
   license_model  = "LICENSE_INCLUDED"
@@ -69,7 +69,7 @@ resource "oci_identity_dynamic_group" "control_adb" {
   provider       = oci.home
   count          = var.enable_control_adb ? 1 : 0
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-control-adb-dg"
+  name           = "${local.prefix}-control-adb-dg"
   description    = "The sandbox factory control database."
   matching_rule  = "resource.id = '${oci_database_autonomous_database.control[0].id}'"
   freeform_tags  = local.freeform_tags
@@ -79,7 +79,7 @@ resource "oci_identity_policy" "control_adb_genai" {
   provider       = oci.home
   count          = var.enable_control_adb ? 1 : 0
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-control-adb-genai"
+  name           = "${local.prefix}-control-adb-genai"
   description    = "Control database may use Generative AI."
   statements     = ["allow dynamic-group ${oci_identity_dynamic_group.control_adb[0].name} to manage generative-ai-family in tenancy"]
   freeform_tags  = local.freeform_tags

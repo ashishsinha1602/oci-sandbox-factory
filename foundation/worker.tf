@@ -51,7 +51,7 @@ locals {
   make_token   = var.enable_worker && var.ocir_token == "" && var.current_user_ocid != "" && var.edition != "free"
   ocir_user    = var.ocir_user != "" ? var.ocir_user : (local.make_token ? data.oci_identity_user.installer[0].name : "")
   ocir_token   = var.ocir_token != "" ? var.ocir_token : (local.make_token ? oci_identity_auth_token.ocir[0].token : "")
-  worker_names = [for n in range(var.worker_count) : n == 0 ? "${var.prefix}-worker" : "${var.prefix}-worker-${n + 1}"]
+  worker_names = [for n in range(var.worker_count) : n == 0 ? "${local.prefix}-worker" : "${local.prefix}-worker-${n + 1}"]
 }
 
 data "oci_identity_user" "installer" {
@@ -72,13 +72,13 @@ resource "oci_identity_auth_token" "ocir" {
   count       = local.make_token ? 1 : 0
   provider    = oci.home
   user_id     = var.current_user_ocid
-  description = "${var.prefix} sandbox factory: workers push the images users build"
+  description = "${local.prefix} sandbox factory: workers push the images users build"
 
   lifecycle {
     precondition {
       # room for a new token, or this install's token already exists (a re-apply)
       condition = (length([for t in data.oci_identity_auth_tokens.installer[0].tokens : t if t.state == "ACTIVE"]) < 2
-      || contains([for t in data.oci_identity_auth_tokens.installer[0].tokens : t.description], "${var.prefix} sandbox factory: workers push the images users build"))
+      || contains([for t in data.oci_identity_auth_tokens.installer[0].tokens : t.description], "${local.prefix} sandbox factory: workers push the images users build"))
       error_message = "You already have 2 auth tokens, the most OCI allows. Either delete one (Profile > Auth tokens) and run Apply again, or paste an existing token in 'Registry auth token' on the form."
     }
   }
@@ -88,8 +88,8 @@ resource "oci_identity_dynamic_group" "worker" {
   count          = var.enable_worker ? 1 : 0
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-worker-dg"
-  description    = "Sandbox factory workers, build and test containers in ${var.prefix}-control."
+  name           = "${local.prefix}-worker-dg"
+  description    = "Sandbox factory workers, build and test containers in ${local.prefix}-control."
   # Standard: the container instances in <prefix>-control (the released rule, unchanged).
   # Free Tier: the worker VM in <prefix>-control. One flat rule per edition: a nested
   # ANY {ALL {...}, ALL {...}} is accepted by IAM but never matched the container
@@ -102,7 +102,7 @@ resource "oci_identity_policy" "worker" {
   count          = var.enable_worker ? 1 : 0
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-worker-policy"
+  name           = "${local.prefix}-worker-policy"
   description    = "What the sandbox factory workers may do."
   freeform_tags  = local.freeform_tags
   statements = [
@@ -142,7 +142,7 @@ locals {
 
   # One environment for both shapes, so the worker behaves the same wherever it runs.
   worker_env_base = {
-    SBX_PREFIX    = var.prefix
+    SBX_PREFIX    = local.prefix
     SBX_EDITION   = var.edition
     SBX_FREE_APPS = local.free_apps ? "1" : "0"
     # the shipped starter images live next to the worker image (…/sandbox-factory/)
@@ -242,7 +242,7 @@ data "oci_core_images" "worker" {
 }
 
 locals {
-  worker_env_file   = join("\n", [for k, v in merge(local.worker_env, { WORKER_NAME = "${var.prefix}-worker" }) : "${k}=${v}"])
+  worker_env_file   = join("\n", [for k, v in merge(local.worker_env, { WORKER_NAME = "${local.prefix}-worker" }) : "${k}=${v}"])
   worker_cloud_init = <<-EOT
     #cloud-config
     write_files:
@@ -283,7 +283,7 @@ resource "oci_core_instance" "worker" {
   count               = local.use_vm ? 1 : 0
   compartment_id      = oci_identity_compartment.control.id
   availability_domain = local.worker_ads[0]
-  display_name        = "${var.prefix}-worker"
+  display_name        = "${local.prefix}-worker"
   shape               = var.worker_shape
   freeform_tags       = merge(local.freeform_tags, { role = "worker" })
 
@@ -303,7 +303,7 @@ resource "oci_core_instance" "worker" {
   create_vnic_details {
     # hosting applications: a public address, and the app ports opened in network.tf
     subnet_id        = local.free_apps ? oci_core_subnet.public.id : oci_core_subnet.private.id
-    display_name     = "${var.prefix}-worker"
+    display_name     = "${local.prefix}-worker"
     assign_public_ip = local.free_apps
   }
 

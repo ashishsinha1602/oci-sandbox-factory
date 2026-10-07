@@ -135,11 +135,12 @@ variables:
     type: string
     title: Name prefix
     description: >-
-      Names the compartments, IAM policies, tag namespace, network and budget, for example
-      sbx1. It must not be in use by another install in this tenancy (compartment and IAM
-      names are tenancy-wide), so pick a new one for every install.
-    required: true
-    pattern: "^[a-z][a-z0-9]{1,11}$"
+      Optional. Names the compartments, IAM policies, tag namespace, network and budget, for
+      example sbx1. Leave it empty and the install picks a unique one (sbx plus four
+      characters), shown in the outputs. A prefix you type must not be in use by another
+      install in this tenancy.
+    required: false
+    pattern: "^([a-z][a-z0-9]{1,11})?$"
 
   owner:
     type: string

@@ -6,16 +6,16 @@
 
 resource "oci_core_vcn" "sandbox" {
   compartment_id = oci_identity_compartment.control.id
-  display_name   = "${var.prefix}-vcn"
+  display_name   = "${local.prefix}-vcn"
   cidr_blocks    = [var.vcn_cidr]
-  dns_label      = replace(var.prefix, "-", "")
+  dns_label      = replace(local.prefix, "-", "")
   freeform_tags  = local.freeform_tags
 }
 
 resource "oci_core_internet_gateway" "igw" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-igw"
+  display_name   = "${local.prefix}-igw"
   enabled        = true
   freeform_tags  = local.freeform_tags
 }
@@ -23,7 +23,7 @@ resource "oci_core_internet_gateway" "igw" {
 resource "oci_core_nat_gateway" "nat" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-nat"
+  display_name   = "${local.prefix}-nat"
   freeform_tags  = local.freeform_tags
 }
 
@@ -38,7 +38,7 @@ data "oci_core_services" "all" {
 resource "oci_core_service_gateway" "sgw" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-sgw"
+  display_name   = "${local.prefix}-sgw"
   freeform_tags  = local.freeform_tags
 
   services {
@@ -51,7 +51,7 @@ resource "oci_core_service_gateway" "sgw" {
 resource "oci_core_route_table" "public" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-rt-public"
+  display_name   = "${local.prefix}-rt-public"
   freeform_tags  = local.freeform_tags
 
   route_rules {
@@ -64,7 +64,7 @@ resource "oci_core_route_table" "public" {
 resource "oci_core_route_table" "private" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-rt-private"
+  display_name   = "${local.prefix}-rt-private"
   freeform_tags  = local.freeform_tags
 
   route_rules {
@@ -85,7 +85,7 @@ resource "oci_core_route_table" "private" {
 resource "oci_core_security_list" "public" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-sl-public"
+  display_name   = "${local.prefix}-sl-public"
   freeform_tags  = local.freeform_tags
 
   egress_security_rules {
@@ -141,7 +141,7 @@ resource "oci_core_security_list" "public" {
 resource "oci_core_security_list" "private" {
   compartment_id = oci_identity_compartment.control.id
   vcn_id         = oci_core_vcn.sandbox.id
-  display_name   = "${var.prefix}-sl-private"
+  display_name   = "${local.prefix}-sl-private"
   freeform_tags  = local.freeform_tags
 
   egress_security_rules {
@@ -162,7 +162,7 @@ resource "oci_core_security_list" "private" {
 resource "oci_core_subnet" "public" {
   compartment_id             = oci_identity_compartment.control.id
   vcn_id                     = oci_core_vcn.sandbox.id
-  display_name               = "${var.prefix}-public"
+  display_name               = "${local.prefix}-public"
   cidr_block                 = var.public_subnet_cidr
   dns_label                  = "pub"
   prohibit_public_ip_on_vnic = false
@@ -174,7 +174,7 @@ resource "oci_core_subnet" "public" {
 resource "oci_core_subnet" "private" {
   compartment_id             = oci_identity_compartment.control.id
   vcn_id                     = oci_core_vcn.sandbox.id
-  display_name               = "${var.prefix}-private"
+  display_name               = "${local.prefix}-private"
   cidr_block                 = var.private_subnet_cidr
   dns_label                  = "priv"
   prohibit_public_ip_on_vnic = true

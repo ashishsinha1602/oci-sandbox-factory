@@ -22,15 +22,12 @@ variable "parent_compartment_ocid" {
 # ---------------------------------------------------------------------------
 variable "prefix" {
   type = string
-  # No working default: Resource Manager can create a stack without the form's prefix even though the field is
-  # required (2026-10-05, four installs), and a silent "sbx" then collides with an earlier install's names.
+  # Empty means "pick one": Resource Manager can create a stack without the form's prefix even though the field is
+  # required (2026-10-05), and a fixed fallback like "sbx" collides with an earlier install's names. local.prefix
+  # is then sbx + 4 random characters, kept in state, so re-applies keep the same names.
   default     = ""
-  description = "Short name used for the compartment tree, tag namespace, VCN, budget and quotas. Pick a new one per install."
+  description = "Short name used for the compartment tree, tag namespace, VCN, budget and quotas. Leave empty to get a unique one."
 
-  validation {
-    condition     = var.prefix != ""
-    error_message = "Name prefix is empty. Edit the stack's variables, type a prefix that no other install in this tenancy uses (for example sbx21), and run Apply again. Nothing has been created."
-  }
   validation {
     condition     = var.prefix == "" || can(regex("^[a-z][a-z0-9-]{1,14}$", var.prefix))
     error_message = "prefix must be 2-15 chars, lowercase letters, digits or dashes, starting with a letter."

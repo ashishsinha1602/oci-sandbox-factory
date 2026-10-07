@@ -28,3 +28,8 @@ output "tag_namespace" {
 output "budget_id" {
   value = oci_budget_budget.sandbox.id
 }
+
+output "prefix" {
+  description = "The name prefix of this install (generated when the form sent none). Every compartment and policy name starts with it."
+  value       = local.prefix
+}

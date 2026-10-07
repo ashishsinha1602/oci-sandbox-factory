@@ -13,8 +13,8 @@ resource "oci_identity_policy" "aidp" {
   provider       = oci.home
   count          = var.enable_aidp ? 1 : 0
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-aidp"
-  description    = "Oracle AI Data Platform instances created in ${var.prefix} sandboxes."
+  name           = "${local.prefix}-aidp"
+  description    = "Oracle AI Data Platform instances created in ${local.prefix} sandboxes."
   freeform_tags  = local.freeform_tags
   statements = [
     "allow any-user to {AUTHENTICATION_INSPECT, DOMAIN_INSPECT, DOMAIN_READ, DYNAMIC_GROUP_INSPECT, GROUP_INSPECT, GROUP_MEMBERSHIP_INSPECT, USER_INSPECT, USER_READ} in tenancy where all {request.principal.type='aidataplatform'}",

@@ -5,7 +5,7 @@
 resource "oci_identity_policy" "apigateway_functions" {
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-apigateway-functions"
+  name           = "${local.prefix}-apigateway-functions"
   description    = "Sandbox API gateways may invoke the OCI Functions in sbx-sandboxes, so every function gets a plain HTTPS URL."
   statements = [
     "allow any-user to use functions-family in compartment id ${oci_identity_compartment.sandboxes.id} where ALL {request.principal.type = 'ApiGateway', request.resource.compartment.id = '${oci_identity_compartment.sandboxes.id}'}",
@@ -16,7 +16,7 @@ resource "oci_identity_policy" "apigateway_functions" {
 resource "oci_identity_policy" "functions_registry" {
   provider       = oci.home
   compartment_id = var.tenancy_ocid
-  name           = "${var.prefix}-functions-registry"
+  name           = "${local.prefix}-functions-registry"
   description    = "OCI Functions may pull the function images the factory builds into the registry."
   statements = [
     "allow service faas to read repos in tenancy",
